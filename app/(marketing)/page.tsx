@@ -1,21 +1,9 @@
-import Image from "next/image";
+import Link from "next/link"
+import { Check } from "lucide-react"
 
 export default function Home() {
   return (
     <>
-      {/* Header */}
-      <header className="w-full border-b border-gray-100">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Image src="/logo.png" alt="MedPersona" width={140} height={48} priority />
-          <a
-            href="mailto:info@medpersona.id"
-            className="rounded-full bg-teal-dark px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-teal"
-          >
-            Hubungi Kami
-          </a>
-        </div>
-      </header>
-
       {/* Hero */}
       <section className="flex flex-1 items-center bg-gradient-to-br from-white via-teal-light to-white">
         <div className="mx-auto max-w-6xl px-6 py-20 text-center md:py-32">
@@ -33,19 +21,19 @@ export default function Home() {
           </p>
           <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <a
-              href="mailto:info@medpersona.id"
+              href="https://wa.me/6285121564154"
+              target="_blank"
+              rel="noopener noreferrer"
               className="rounded-full bg-teal-dark px-8 py-3.5 text-base font-semibold text-white shadow-lg transition-all hover:bg-teal hover:shadow-xl"
             >
               Konsultasi Gratis
             </a>
-            <a
-              href="https://wa.me/6285121564154"
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href="/harga"
               className="rounded-full border-2 border-teal-dark px-8 py-3.5 text-base font-semibold text-teal-dark transition-colors hover:bg-teal-dark hover:text-white"
             >
-              WhatsApp Kami
-            </a>
+              Lihat Harga
+            </Link>
           </div>
         </div>
       </section>
@@ -91,7 +79,71 @@ export default function Home() {
         </div>
       </section>
 
-      {/* About / Legal Entity */}
+      {/* Pricing Preview */}
+      <section className="bg-gray-50 py-20">
+        <div className="mx-auto max-w-6xl px-6">
+          <h2 className="text-center text-3xl font-bold text-navy-dark">
+            Paket yang Terjangkau
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-center text-gray-500">
+            Pilih paket yang sesuai dengan kebutuhan praktik Anda
+          </p>
+          <div className="mt-14 grid gap-6 md:grid-cols-4">
+            {[
+              { name: "Starter", price: "299K", platform: "Instagram", posts: "22 post/bln" },
+              { name: "Growth", price: "649K", platform: "IG + TikTok", posts: "40 post/bln" },
+              { name: "Pro", price: "1.299K", platform: "IG + TT + LinkedIn", posts: "60 post/bln", popular: true },
+              { name: "Elite", price: "2.499K", platform: "Semua Platform", posts: "100 post/bln" },
+            ].map((pkg) => (
+              <div
+                key={pkg.name}
+                className={`rounded-2xl border p-6 ${
+                  pkg.popular
+                    ? "border-teal-dark bg-white shadow-lg ring-2 ring-teal-dark"
+                    : "border-gray-200 bg-white"
+                }`}
+              >
+                {pkg.popular && (
+                  <span className="mb-4 inline-block rounded-full bg-teal-dark px-3 py-1 text-xs font-semibold text-white">
+                    Populer
+                  </span>
+                )}
+                <h3 className="text-lg font-bold text-navy-dark">{pkg.name}</h3>
+                <div className="mt-2">
+                  <span className="text-3xl font-bold text-navy-dark">Rp {pkg.price}</span>
+                  <span className="text-sm text-gray-500">/bulan</span>
+                </div>
+                <ul className="mt-6 space-y-2.5">
+                  <li className="flex items-center gap-2 text-sm text-gray-600">
+                    <Check className="h-4 w-4 text-teal-dark" />
+                    {pkg.platform}
+                  </li>
+                  <li className="flex items-center gap-2 text-sm text-gray-600">
+                    <Check className="h-4 w-4 text-teal-dark" />
+                    {pkg.posts}
+                  </li>
+                  <li className="flex items-center gap-2 text-sm text-gray-600">
+                    <Check className="h-4 w-4 text-teal-dark" />
+                    Konten profesional
+                  </li>
+                </ul>
+                <a
+                  href={`/daftar?paket=${pkg.name.toLowerCase()}`}
+                  className={`mt-6 block rounded-lg py-2.5 text-center text-sm font-semibold transition-colors ${
+                    pkg.popular
+                      ? "bg-teal-dark text-white hover:bg-teal"
+                      : "border border-teal-dark text-teal-dark hover:bg-teal-dark hover:text-white"
+                  }`}
+                >
+                  Mulai Sekarang
+                </a>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* About */}
       <section className="bg-navy-dark py-20 text-white">
         <div className="mx-auto max-w-6xl px-6">
           <div className="grid items-center gap-12 md:grid-cols-2">
@@ -103,17 +155,9 @@ export default function Home() {
                 MedPersona oleh PT Apexa Buana Hospita
               </h2>
               <p className="mt-4 text-lg leading-relaxed text-gray-300">
-                MedPersona adalah brand dari{" "}
-                <strong className="text-white">PT Apexa Buana Hospita</strong>, sebuah
-                perusahaan yang berfokus pada solusi digital untuk industri kesehatan.
                 Kami memahami bahwa dokter dan tenaga medis memiliki keahlian luar biasa
-                yang layak diketahui lebih banyak orang.
-              </p>
-              <p className="mt-4 text-lg leading-relaxed text-gray-300">
-                Misi kami sederhana: membantu para profesional kesehatan mengubah
-                keahlian mereka menjadi pengaruh positif — menjangkau lebih banyak
-                pasien, membangun kepercayaan, dan memperkuat reputasi profesional
-                melalui media sosial.
+                yang layak diketahui lebih banyak orang. Misi kami: membantu para profesional
+                kesehatan mengubah keahlian menjadi pengaruh positif.
               </p>
             </div>
             <div className="rounded-2xl bg-white/10 p-8 backdrop-blur-sm">
@@ -124,34 +168,12 @@ export default function Home() {
                   <dd className="mt-1 text-white">PT Apexa Buana Hospita</dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-400">Brand</dt>
-                  <dd className="mt-1 text-white">MedPersona</dd>
-                </div>
-                <div>
                   <dt className="text-sm font-medium text-gray-400">Alamat</dt>
-                  <dd className="mt-1">
-                    Lavon 2, Viridia 9, Blok H2, Nomor 28
-                    <br />
-                    Sindang Jaya, Kabupaten Tangerang
-                    <br />
-                    Banten, 15560
-                  </dd>
+                  <dd className="mt-1">Lavon 2, Viridia 9, Blok H2, No. 28, Sindang Jaya, Kab. Tangerang, Banten 15560</dd>
                 </div>
                 <div>
                   <dt className="text-sm font-medium text-gray-400">Email</dt>
-                  <dd className="mt-1">
-                    <a href="mailto:info@medpersona.id" className="text-teal transition-colors hover:text-teal-light">
-                      info@medpersona.id
-                    </a>
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-sm font-medium text-gray-400">Telepon</dt>
-                  <dd className="mt-1">
-                    <a href="tel:+6285121564154" className="text-teal transition-colors hover:text-teal-light">
-                      085-1215-64154
-                    </a>
-                  </dd>
+                  <dd className="mt-1"><a href="mailto:info@medpersona.id" className="text-teal hover:text-teal-light">info@medpersona.id</a></dd>
                 </div>
               </dl>
             </div>
@@ -164,8 +186,7 @@ export default function Home() {
         <div className="mx-auto max-w-3xl px-6 text-center text-white">
           <h2 className="text-3xl font-bold">Siap Membangun Kehadiran Digital Anda?</h2>
           <p className="mt-4 text-lg text-white/80">
-            Konsultasikan kebutuhan media sosial Anda dengan tim MedPersona — gratis,
-            tanpa komitmen.
+            Konsultasikan kebutuhan media sosial Anda — gratis, tanpa komitmen.
           </p>
           <a
             href="https://wa.me/6285121564154"
@@ -177,35 +198,8 @@ export default function Home() {
           </a>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="bg-navy-dark py-10 text-gray-400">
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
-            <div>
-              <Image src="/logo.png" alt="MedPersona" width={120} height={40} className="brightness-0 invert" />
-              <p className="mt-2 text-sm">Turn Expertise Into Influence</p>
-            </div>
-            <div className="text-center text-sm md:text-right">
-              <p className="text-white font-medium">PT Apexa Buana Hospita</p>
-              <p className="mt-1">
-                Lavon 2, Viridia 9, Blok H2 No. 28, Sindang Jaya
-              </p>
-              <p>Kabupaten Tangerang, Banten 15560</p>
-              <p className="mt-2">
-                <a href="mailto:info@medpersona.id" className="hover:text-teal">info@medpersona.id</a>
-                {" | "}
-                <a href="tel:+6285121564154" className="hover:text-teal">085-1215-64154</a>
-              </p>
-            </div>
-          </div>
-          <div className="mt-8 border-t border-gray-700 pt-6 text-center text-xs">
-            &copy; {new Date().getFullYear()} PT Apexa Buana Hospita. All rights reserved.
-          </div>
-        </div>
-      </footer>
     </>
-  );
+  )
 }
 
 function ServiceCard({
@@ -213,9 +207,9 @@ function ServiceCard({
   description,
   icon,
 }: {
-  title: string;
-  description: string;
-  icon: React.ReactNode;
+  title: string
+  description: string
+  icon: React.ReactNode
 }) {
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-sm transition-shadow hover:shadow-md">
@@ -225,5 +219,5 @@ function ServiceCard({
       <h3 className="text-xl font-semibold text-navy-dark">{title}</h3>
       <p className="mt-3 leading-relaxed text-gray-500">{description}</p>
     </div>
-  );
+  )
 }

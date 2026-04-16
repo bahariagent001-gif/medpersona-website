@@ -1,0 +1,86 @@
+import { createClient } from "@/lib/supabase/server"
+import { redirect } from "next/navigation"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+
+export const metadata = { title: "Pengaturan — MedPersona" }
+
+export default async function SettingsPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect("/masuk")
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*, doctors(full_name, title, specialty)")
+    .eq("id", user.id)
+    .single()
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-navy-dark">Pengaturan</h1>
+        <p className="text-sm text-gray-500">Kelola akun dan preferensi Anda</p>
+      </div>
+
+      {/* Account info */}
+      <Card>
+        <CardHeader><CardTitle>Informasi Akun</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <label className="text-sm font-medium text-gray-500">Nama</label>
+              <p className="mt-1 text-navy-dark">{profile?.full_name || "-"}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-500">Email</label>
+              <p className="mt-1 text-navy-dark">{user.email}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-500">Role</label>
+              <div className="mt-1">
+                <Badge variant="info">{profile?.role || "user"}</Badge>
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-500">User ID</label>
+              <p className="mt-1 font-mono text-xs text-gray-400">{user.id}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Doctor profile link */}
+      {profile?.doctor_id && (
+        <Card>
+          <CardHeader><CardTitle>Profil Dokter</CardTitle></CardHeader>
+          <CardContent>
+            <p className="text-sm text-gray-500">Akun ini terhubung dengan profil dokter:</p>
+            <p className="mt-2 font-semibold text-navy-dark">
+              {(profile.doctors as { full_name: string; title: string; specialty: string })?.full_name || profile.doctor_id}
+            </p>
+            <p className="text-sm text-gray-500">
+              {(profile.doctors as { full_name: string; title: string; specialty: string })?.specialty}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Session info */}
+      <Card>
+        <CardHeader><CardTitle>Sesi</CardTitle></CardHeader>
+        <CardContent>
+          <p className="text-sm text-gray-500">Login terakhir: {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString("id-ID") : "-"}</p>
+          <form action="/api/auth/signout" method="POST" className="mt-4">
+            <button
+              type="submit"
+              className="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+            >
+              Keluar dari Akun
+            </button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
