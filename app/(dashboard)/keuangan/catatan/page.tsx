@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
+import { getAuthProfile } from "@/lib/supabase/auth"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { ArrowLeft, FileText } from "lucide-react"
 import Link from "next/link"
@@ -7,11 +8,10 @@ import Link from "next/link"
 export const metadata = { title: "Catatan Laporan Keuangan — MedPersona" }
 
 export default async function FinancialNotesPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { user, profile } = await getAuthProfile()
   if (!user) redirect("/masuk")
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
   if (!["super_admin", "admin"].includes(profile?.role || "")) redirect("/dashboard")
+  const supabase = await createClient()
 
   const { data: reports } = await supabase
     .from("financial_reports")

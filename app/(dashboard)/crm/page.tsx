@@ -1,11 +1,14 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
+import { getAuthProfile } from "@/lib/supabase/auth"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { formatDate } from "@/lib/utils"
 import { Target, User, Phone, Mail } from "lucide-react"
 
 export const metadata = { title: "CRM — MedPersona" }
+
+export const revalidate = 60
 
 const STAGES = [
   { value: "new", label: "Baru", color: "bg-gray-100" },
@@ -18,12 +21,11 @@ const STAGES = [
 ]
 
 export default async function CRMPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { user, profile } = await getAuthProfile()
   if (!user) redirect("/masuk")
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
   if (!["super_admin", "admin", "staff"].includes(profile?.role || "")) redirect("/dashboard")
 
+  const supabase = await createClient()
   const { data: leads } = await supabase
     .from("leads")
     .select("*")

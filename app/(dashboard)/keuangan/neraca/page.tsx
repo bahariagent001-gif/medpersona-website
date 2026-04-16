@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
+import { getAuthProfile } from "@/lib/supabase/auth"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { formatCurrency } from "@/lib/utils"
 import { ArrowLeft } from "lucide-react"
@@ -15,13 +16,10 @@ export default async function BalanceSheetPage({
   searchParams: Promise<{ period?: string }>
 }) {
   const params = await searchParams
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { user, profile } = await getAuthProfile()
   if (!user) redirect("/masuk")
-
-  const { data: profile } = await supabase
-    .from("profiles").select("role").eq("id", user.id).single()
   if (!["super_admin", "admin"].includes(profile?.role || "")) redirect("/dashboard")
+  const supabase = await createClient()
 
   const period = params.period || new Date().toISOString().slice(0, 7)
 

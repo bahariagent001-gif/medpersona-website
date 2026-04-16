@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
+import { getAuthProfile } from "@/lib/supabase/auth"
 import { KpiCard } from "@/components/dashboard/kpi-card"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { formatCurrency } from "@/lib/utils"
@@ -10,20 +11,14 @@ export const metadata = {
   title: "Keuangan — MedPersona",
 }
 
+export const revalidate = 60
+
 export default async function FinancePage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { user, profile } = await getAuthProfile()
   if (!user) redirect("/masuk")
+  if (!["super_admin", "admin"].includes(profile?.role || "")) redirect("/dashboard")
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single()
-
-  if (!["super_admin", "admin"].includes(profile?.role || "")) {
-    redirect("/dashboard")
-  }
+  const supabase = await createClient()
 
   const currentMonth = new Date().toISOString().slice(0, 7)
 

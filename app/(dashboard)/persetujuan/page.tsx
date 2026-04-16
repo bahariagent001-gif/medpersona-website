@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
+import { getAuthProfile } from "@/lib/supabase/auth"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { formatDate } from "@/lib/utils"
@@ -17,15 +18,10 @@ export default async function ApprovalPage({
   searchParams: Promise<{ status?: string }>
 }) {
   const params = await searchParams
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { user, profile } = await getAuthProfile()
   if (!user) redirect("/masuk")
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role, doctor_id")
-    .eq("id", user.id)
-    .single()
+  const supabase = await createClient()
 
   const isAdmin = ["super_admin", "admin", "staff"].includes(profile?.role || "")
   const statusFilter = params.status || "pending_review"

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
+import { getAuthProfile } from "@/lib/supabase/auth"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { formatDate } from "@/lib/utils"
@@ -8,17 +9,19 @@ import Link from "next/link"
 
 export const metadata = { title: "Konten — MedPersona" }
 
+export const revalidate = 30
+
 export default async function ContentPage({
   searchParams,
 }: {
   searchParams: Promise<{ status?: string; doctor?: string }>
 }) {
   const params = await searchParams
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { user, profile } = await getAuthProfile()
   if (!user) redirect("/masuk")
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
   if (!["super_admin", "admin", "staff"].includes(profile?.role || "")) redirect("/dashboard")
+
+  const supabase = await createClient()
 
   let query = supabase
     .from("content_items")
@@ -30,12 +33,11 @@ export default async function ContentPage({
 
   const { data: content } = await query.limit(100)
 
-  // Status counts
-  const { data: allContent } = await supabase.from("content_items").select("status")
-  const statusCounts = (allContent || []).reduce((acc, c) => {
-    acc[c.status] = (acc[c.status] || 0) + 1
-    return acc
-  }, {} as Record<string, number>)
+  // Build status counts from fetched content (avoids separate full-table scan)
+  const statusCounts: Record<string, number> = {}
+  ;(content || []).forEach((c) => {
+    statusCounts[c.status] = (statusCounts[c.status] || 0) + 1
+  })
 
   const statusBadge: Record<string, "success" | "warning" | "danger" | "info" | "secondary"> = {
     drafted: "secondary", pending_review: "warning", approved: "info",

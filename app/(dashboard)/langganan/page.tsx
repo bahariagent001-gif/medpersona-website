@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
+import { getAuthProfile } from "@/lib/supabase/auth"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
@@ -31,15 +32,10 @@ function formatDate(date: string): string {
 }
 
 export default async function SubscriptionPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { user, profile } = await getAuthProfile()
   if (!user) redirect("/masuk")
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("doctor_id, role")
-    .eq("id", user.id)
-    .single()
+  const supabase = await createClient()
 
   if (!profile?.doctor_id) {
     return (

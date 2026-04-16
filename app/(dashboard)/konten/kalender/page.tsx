@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
+import { getAuthProfile } from "@/lib/supabase/auth"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
@@ -43,9 +44,10 @@ export default async function ContentCalendarPage({
   const year = sp.year ? parseInt(sp.year) : now.getFullYear()
   const month = sp.month ? parseInt(sp.month) - 1 : now.getMonth()
 
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { user } = await getAuthProfile()
   if (!user) redirect("/masuk")
+
+  const supabase = await createClient()
 
   const startDate = `${year}-${String(month + 1).padStart(2, "0")}-01`
   const endDate = `${year}-${String(month + 1).padStart(2, "0")}-${new Date(year, month + 1, 0).getDate()}`

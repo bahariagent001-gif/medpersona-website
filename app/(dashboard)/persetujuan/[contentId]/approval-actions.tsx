@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
-import { Check, X, RotateCcw } from "lucide-react"
+import { Check, X, RotateCcw, AlertCircle } from "lucide-react"
 
 const REVISION_TEMPLATES = [
   "Ganti gambar — kurang relevan",
@@ -23,11 +23,16 @@ export function ApprovalActions({
 }) {
   const [loading, setLoading] = useState(false)
   const [showRevision, setShowRevision] = useState(false)
+  const [showRejectConfirm, setShowRejectConfirm] = useState(false)
   const [notes, setNotes] = useState("")
+  const [error, setError] = useState("")
+  const [success, setSuccess] = useState("")
   const router = useRouter()
 
   async function handleAction(action: "approved" | "rejected" | "revision") {
     setLoading(true)
+    setError("")
+    setSuccess("")
     const supabase = createClient()
 
     const updateData: Record<string, unknown> = {
@@ -43,27 +48,43 @@ export function ApprovalActions({
       updateData.approval_notes = notes.trim()
     }
 
-    const { error } = await supabase
+    const { error: updateError } = await supabase
       .from("content_items")
       .update(updateData)
       .eq("id", contentId)
 
     setLoading(false)
 
-    if (error) {
-      alert("Gagal: " + error.message)
+    if (updateError) {
+      setError("Gagal menyimpan: " + updateError.message)
       return
     }
 
-    router.push("/persetujuan")
-    router.refresh()
+    const labels = { approved: "Disetujui", rejected: "Ditolak", revision: "Revisi terkirim" }
+    setSuccess(labels[action])
+    setTimeout(() => {
+      router.push("/persetujuan")
+    }, 500)
   }
 
   return (
     <div className="space-y-4">
+      {error && (
+        <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          <AlertCircle className="h-4 w-4 shrink-0" />
+          {error}
+        </div>
+      )}
+
+      {success && (
+        <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">
+          <Check className="h-4 w-4 shrink-0" />
+          {success} — mengalihkan...
+        </div>
+      )}
+
       {showRevision && (
         <div className="space-y-3">
-          {/* Quick templates */}
           <div className="flex flex-wrap gap-2">
             {REVISION_TEMPLATES.map((tmpl) => (
               <button
@@ -85,16 +106,39 @@ export function ApprovalActions({
         </div>
       )}
 
+      {showRejectConfirm && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+          <p className="text-sm font-medium text-red-800">Yakin ingin menolak konten ini?</p>
+          <div className="mt-3 flex gap-2">
+            <Button
+              onClick={() => handleAction("rejected")}
+              disabled={loading}
+              variant="destructive"
+              size="sm"
+            >
+              {loading ? "Memproses..." : "Ya, Tolak"}
+            </Button>
+            <Button
+              onClick={() => setShowRejectConfirm(false)}
+              variant="outline"
+              size="sm"
+            >
+              Batal
+            </Button>
+          </div>
+        </div>
+      )}
+
       <div className="flex gap-3">
         <Button
           onClick={() => handleAction("approved")}
-          disabled={loading}
+          disabled={loading || !!success}
           variant="success"
           size="lg"
           className="flex-1"
         >
           <Check className="h-5 w-5" />
-          Setujui
+          {loading ? "Memproses..." : "Setujui"}
         </Button>
 
         <Button
@@ -105,7 +149,7 @@ export function ApprovalActions({
               setShowRevision(!showRevision)
             }
           }}
-          disabled={loading}
+          disabled={loading || !!success}
           variant="warning"
           size="lg"
           className="flex-1"
@@ -115,10 +159,8 @@ export function ApprovalActions({
         </Button>
 
         <Button
-          onClick={() => {
-            if (confirm("Tolak konten ini?")) handleAction("rejected")
-          }}
-          disabled={loading}
+          onClick={() => setShowRejectConfirm(true)}
+          disabled={loading || !!success || showRejectConfirm}
           variant="destructive"
           size="lg"
           className="flex-1"

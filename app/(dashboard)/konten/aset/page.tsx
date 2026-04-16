@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
+import { getAuthProfile } from "@/lib/supabase/auth"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { formatShortDate } from "@/lib/utils"
@@ -8,9 +9,10 @@ import { Image, Video, FileText } from "lucide-react"
 export const metadata = { title: "Aset Konten — MedPersona" }
 
 export default async function AssetLibraryPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { user } = await getAuthProfile()
   if (!user) redirect("/masuk")
+
+  const supabase = await createClient()
 
   // Fetch content items that have assets
   const { data: items } = await supabase

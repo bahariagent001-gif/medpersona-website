@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect, notFound } from "next/navigation"
+import { getAuthProfile } from "@/lib/supabase/auth"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { formatCurrency, formatDate } from "@/lib/utils"
@@ -13,9 +14,9 @@ export async function generateMetadata({ params }: { params: Promise<{ doctorId:
 
 export default async function DoctorDetailPage({ params }: { params: Promise<{ doctorId: string }> }) {
   const { doctorId } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { user } = await getAuthProfile()
   if (!user) redirect("/masuk")
+  const supabase = await createClient()
 
   const { data: doctor } = await supabase.from("doctors").select("*").eq("id", doctorId).single()
   if (!doctor) notFound()

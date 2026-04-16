@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
-import { CheckSquare } from "lucide-react"
+import { CheckSquare, AlertCircle, Check } from "lucide-react"
 
 export function BatchApproveButton({
   contentIds,
@@ -14,17 +14,17 @@ export function BatchApproveButton({
   count: number
 }) {
   const [loading, setLoading] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
+  const [error, setError] = useState("")
+  const [success, setSuccess] = useState(false)
   const router = useRouter()
 
   async function handleBatchApprove() {
-    if (!confirm(`Setujui ${count} konten standar sekaligus? (Konten personal tidak termasuk)`)) {
-      return
-    }
-
     setLoading(true)
+    setError("")
     const supabase = createClient()
 
-    const { error } = await supabase
+    const { error: updateError } = await supabase
       .from("content_items")
       .update({
         status: "approved",
@@ -35,18 +35,46 @@ export function BatchApproveButton({
 
     setLoading(false)
 
-    if (error) {
-      alert("Gagal menyetujui: " + error.message)
+    if (updateError) {
+      setError("Gagal menyetujui: " + updateError.message)
       return
     }
 
+    setSuccess(true)
+    setShowConfirm(false)
     router.refresh()
   }
 
+  if (success) {
+    return (
+      <div className="flex items-center gap-2 text-sm text-emerald-700">
+        <Check className="h-4 w-4" />
+        {count} konten disetujui
+      </div>
+    )
+  }
+
+  if (showConfirm) {
+    return (
+      <div className="flex items-center gap-2">
+        {error && (
+          <span className="text-sm text-red-600">{error}</span>
+        )}
+        <span className="text-sm text-gray-600">Setujui {count} konten?</span>
+        <Button onClick={handleBatchApprove} disabled={loading} variant="success" size="sm">
+          {loading ? "Memproses..." : "Ya, Setujui"}
+        </Button>
+        <Button onClick={() => setShowConfirm(false)} variant="outline" size="sm">
+          Batal
+        </Button>
+      </div>
+    )
+  }
+
   return (
-    <Button onClick={handleBatchApprove} disabled={loading} variant="success" size="lg">
+    <Button onClick={() => setShowConfirm(true)} variant="success" size="lg">
       <CheckSquare className="h-4 w-4" />
-      {loading ? "Memproses..." : `Setujui Semua (${count})`}
+      Setujui Semua ({count})
     </Button>
   )
 }

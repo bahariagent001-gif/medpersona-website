@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect, notFound } from "next/navigation"
+import { getAuthProfile } from "@/lib/supabase/auth"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { KpiCard } from "@/components/dashboard/kpi-card"
 import { Badge } from "@/components/ui/badge"
@@ -13,9 +14,9 @@ export default async function DoctorAnalyticsPage({
   params: Promise<{ doctorId: string }>
 }) {
   const { doctorId } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { user } = await getAuthProfile()
   if (!user) redirect("/masuk")
+  const supabase = await createClient()
 
   const [{ data: doctor }, { data: items }, { data: usage }] = await Promise.all([
     supabase.from("doctors").select("id, full_name, title, platforms").eq("id", doctorId).single(),

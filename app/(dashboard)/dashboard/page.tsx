@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
+import { getAuthProfile } from "@/lib/supabase/auth"
 import { KpiCard } from "@/components/dashboard/kpi-card"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -20,16 +21,11 @@ export const metadata = {
   title: "Dashboard — MedPersona",
 }
 
-export default async function DashboardPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect("/masuk")
+export const revalidate = 60
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role, doctor_id")
-    .eq("id", user.id)
-    .single()
+export default async function DashboardPage() {
+  const { user, profile } = await getAuthProfile()
+  if (!user) redirect("/masuk")
 
   const isAdmin = ["super_admin", "admin"].includes(profile?.role || "")
 

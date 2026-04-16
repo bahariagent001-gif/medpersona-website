@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect, notFound } from "next/navigation"
+import { getAuthProfile } from "@/lib/supabase/auth"
 import { formatDate } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
@@ -22,16 +23,10 @@ export default async function ContentApprovalPage({
   params: Promise<{ contentId: string }>
 }) {
   const { contentId } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { user, profile } = await getAuthProfile()
   if (!user) redirect("/masuk")
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role, doctor_id")
-    .eq("id", user.id)
-    .single()
-
+  const supabase = await createClient()
   const { data: content } = await supabase
     .from("content_items")
     .select("*")

@@ -1,15 +1,16 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
+import { getAuthProfile } from "@/lib/supabase/auth"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
 export const metadata = { title: "Pengaturan — MedPersona" }
 
 export default async function SettingsPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { user, profile: authProfile } = await getAuthProfile()
   if (!user) redirect("/masuk")
 
+  const supabase = await createClient()
   const { data: profile } = await supabase
     .from("profiles")
     .select("*, doctors(full_name, title, specialty)")

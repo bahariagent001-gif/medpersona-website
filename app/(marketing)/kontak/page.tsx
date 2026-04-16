@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { Mail, Phone, MapPin } from "lucide-react"
+import { ContactForm } from "./contact-form"
 
 export const metadata: Metadata = {
   title: "Kontak — MedPersona",
@@ -64,35 +65,7 @@ export default function ContactPage() {
           </div>
 
           {/* Contact form */}
-          <div className="rounded-2xl border border-gray-200 bg-white p-8">
-            <h3 className="text-lg font-semibold text-navy-dark">Kirim Pesan</h3>
-            <form className="mt-6 space-y-4" action="/api/webhooks/lead" method="POST">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-navy-dark">Nama Lengkap</label>
-                <input name="name" type="text" required className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:border-teal focus:outline-none focus:ring-2 focus:ring-teal/20" placeholder="Dr. ..." />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-navy-dark">Spesialisasi</label>
-                <input name="specialty" type="text" className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:border-teal focus:outline-none focus:ring-2 focus:ring-teal/20" placeholder="Spesialis Kulit, Anak, dll." />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-navy-dark">Email</label>
-                <input name="email" type="email" required className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:border-teal focus:outline-none focus:ring-2 focus:ring-teal/20" placeholder="anda@email.com" />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-navy-dark">Nomor WhatsApp</label>
-                <input name="phone" type="tel" className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:border-teal focus:outline-none focus:ring-2 focus:ring-teal/20" placeholder="08xx-xxxx-xxxx" />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-navy-dark">Pesan</label>
-                <textarea name="interest" rows={4} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:border-teal focus:outline-none focus:ring-2 focus:ring-teal/20" placeholder="Ceritakan kebutuhan Anda..." />
-              </div>
-              <input type="hidden" name="source" value="website" />
-              <button type="submit" className="w-full rounded-lg bg-teal-dark py-3 text-sm font-semibold text-white transition-colors hover:bg-teal">
-                Kirim Pesan
-              </button>
-            </form>
-          </div>
+          <ContactForm />
         </div>
       </div>
     </section>
