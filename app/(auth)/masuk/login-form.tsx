@@ -20,17 +20,21 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
     setLoading(true)
     setError("")
 
-    const supabase = createClient()
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
 
-    if (error) {
-      setError("Email atau password salah")
+      if (error) {
+        setError("Email atau password salah: " + error.message)
+        setLoading(false)
+        return
+      }
+
+      window.location.href = redirectTo || "/dashboard"
+    } catch (err) {
+      setError("Terjadi kesalahan: " + (err instanceof Error ? err.message : String(err)))
       setLoading(false)
-      return
     }
-
-    router.push(redirectTo || "/dashboard")
-    router.refresh()
   }
 
   async function handleMagicLink(e: React.FormEvent) {
