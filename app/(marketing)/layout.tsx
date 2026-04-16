@@ -12,7 +12,7 @@ export default function MarketingLayout({
       <header className="sticky top-0 z-50 w-full border-b border-gray-100 bg-white/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <Link href="/">
-            <Image src="/logo.png" alt="MedPersona" width={140} height={48} priority />
+            <Image src="/logo.png" alt="MedPersona" width={48} height={48} className="h-10 w-10 object-contain" priority />
           </Link>
           <nav className="hidden items-center gap-8 md:flex">
             <Link href="/harga" className="text-sm font-medium text-gray-600 hover:text-teal-dark">
@@ -52,7 +52,7 @@ export default function MarketingLayout({
         <div className="mx-auto max-w-6xl px-6">
           <div className="grid gap-8 md:grid-cols-4">
             <div>
-              <Image src="/logo.png" alt="MedPersona" width={120} height={40} className="brightness-0 invert" />
+              <Image src="/logo.png" alt="MedPersona" width={40} height={40} className="h-10 w-10 rounded-lg bg-white p-1 object-contain" />
               <p className="mt-3 text-sm">Turn Expertise Into Influence</p>
             </div>
             <div>

@@ -18,8 +18,8 @@ export default async function RegisterPage({
     <div className="flex min-h-screen">
       {/* Left panel - branding */}
       <div className="hidden w-1/2 flex-col justify-between bg-navy-dark p-12 lg:flex">
-        <Link href="/">
-          <Image src="/logo.png" alt="MedPersona" width={140} height={48} className="brightness-0 invert" />
+        <Link href="/" className="inline-block rounded-xl bg-white p-2">
+          <Image src="/logo.png" alt="MedPersona" width={48} height={48} className="h-12 w-12 object-contain" />
         </Link>
         <div>
           <h1 className="text-3xl font-bold text-white">
@@ -46,7 +46,7 @@ export default async function RegisterPage({
           </ul>
         </div>
         <div>
-          <Image src="/logo.png" alt="MedPersona" width={100} height={34} className="brightness-0 invert mb-2" />
+          <Image src="/logo.png" alt="MedPersona" width={40} height={40} className="h-10 w-10 rounded-lg bg-white p-1 object-contain mb-2" />
           <p className="text-sm text-gray-500">
             &copy; {new Date().getFullYear()} PT Apexa Buana Hospita
           </p>
@@ -57,7 +57,7 @@ export default async function RegisterPage({
       <div className="flex w-full items-center justify-center px-6 lg:w-1/2">
         <div className="w-full max-w-sm">
           <div className="mb-8 lg:hidden">
-            <Image src="/logo.png" alt="MedPersona" width={140} height={48} />
+            <Image src="/logo.png" alt="MedPersona" width={48} height={48} className="h-12 w-12 object-contain" />
           </div>
           <h2 className="text-2xl font-bold text-navy-dark">Buat Akun</h2>
           <p className="mt-2 text-sm text-gray-500">

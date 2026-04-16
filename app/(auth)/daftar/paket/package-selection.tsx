@@ -95,7 +95,7 @@ export function PackageSelection() {
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">
           <Link href="/">
-            <Image src="/logo.png" alt="MedPersona" width={120} height={40} />
+            <Image src="/logo.png" alt="MedPersona" width={40} height={40} className="h-10 w-10 object-contain" />
           </Link>
           <Link href="/masuk" className="text-sm text-gray-500 hover:text-teal-dark">
             Sudah punya akun? Masuk

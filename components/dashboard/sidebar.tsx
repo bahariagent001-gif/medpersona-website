@@ -125,7 +125,7 @@ export function Sidebar({ userRole }: { userRole: string }) {
       <div className="flex h-16 items-center justify-between border-b border-gray-100 px-4">
         {!collapsed && (
           <Link href="/dashboard">
-            <Image src="/logo.png" alt="MedPersona" width={120} height={40} />
+            <Image src="/logo.png" alt="MedPersona" width={40} height={40} className="h-10 w-10 object-contain" />
           </Link>
         )}
         <button
