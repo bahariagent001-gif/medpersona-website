@@ -53,9 +53,9 @@ export default async function SubscriptionPage() {
     { data: invoices },
     { data: usage },
   ] = await Promise.all([
-    supabase.from("doctors").select("*").eq("id", profile.doctor_id).single(),
-    supabase.from("invoices").select("*").eq("doctor_id", profile.doctor_id).order("created_at", { ascending: false }).limit(10),
-    supabase.from("monthly_usage").select("*").eq("doctor_id", profile.doctor_id).order("month", { ascending: false }).limit(1),
+    supabase.from("doctors").select("id, full_name, tier, subscription_status, subscription_expires, monthly_cost_idr").eq("id", profile.doctor_id).single(),
+    supabase.from("invoices").select("id, period, tier, amount_idr, status, invoice_url, paid_at, created_at").eq("doctor_id", profile.doctor_id).order("created_at", { ascending: false }).limit(10),
+    supabase.from("monthly_usage").select("doctor_id, month, posts_published, videos_published, revisions_used").eq("doctor_id", profile.doctor_id).order("month", { ascending: false }).limit(1),
   ])
 
   const tier = doctor?.tier || "starter"
