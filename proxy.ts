@@ -30,9 +30,11 @@ export async function proxy(request: NextRequest) {
     }
   )
 
+  // Use getSession() for fast local JWT check (no network call).
+  // Actual auth verification happens in server components via getUser().
   const {
-    data: { user },
-  } = await supabase.auth.getUser()
+    data: { session },
+  } = await supabase.auth.getSession()
 
   const pathname = request.nextUrl.pathname
 
@@ -46,7 +48,7 @@ export async function proxy(request: NextRequest) {
       pathname.startsWith("/persetujuan") ||
       pathname.startsWith("/langganan") ||
       pathname.startsWith("/pengaturan")) {
-    if (!user) {
+    if (!session) {
       const url = request.nextUrl.clone()
       url.pathname = "/masuk"
       url.searchParams.set("redirect", pathname)
@@ -55,7 +57,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // Redirect authenticated users away from login page
-  if (pathname === "/masuk" && user) {
+  if (pathname === "/masuk" && session) {
     const url = request.nextUrl.clone()
     url.pathname = "/dashboard"
     return NextResponse.redirect(url)
