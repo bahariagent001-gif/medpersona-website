@@ -19,6 +19,7 @@ export default async function AdsPage() {
     .from("ad_campaigns")
     .select("*")
     .order("created_at", { ascending: false })
+    .limit(50)
 
   const totalSpend = campaigns?.reduce((s, c) => s + (c.spend_idr || 0), 0) || 0
   const totalLeads = campaigns?.reduce((s, c) => s + (c.leads || 0), 0) || 0

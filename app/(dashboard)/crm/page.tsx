@@ -30,6 +30,7 @@ export default async function CRMPage() {
     .from("leads")
     .select("*")
     .order("created_at", { ascending: false })
+    .limit(200)
 
   const leadsByStage = STAGES.map((stage) => ({
     ...stage,

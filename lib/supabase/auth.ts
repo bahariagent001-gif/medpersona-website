@@ -2,20 +2,21 @@ import { cache } from "react"
 import { createClient } from "./server"
 
 /**
- * Cached per-request auth helper. Deduplicates getUser() + profile
- * queries across layout and page within the same request.
+ * Cached per-request auth helper. Uses getSession() (local JWT read)
+ * instead of getUser() (network call) for speed. Session validity is
+ * already verified by proxy.ts on every request.
  */
 export const getAuthProfile = cache(async () => {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { session } } = await supabase.auth.getSession()
 
-  if (!user) return { user: null, profile: null }
+  if (!session?.user) return { user: null, profile: null }
 
   const { data: profile } = await supabase
     .from("profiles")
     .select("full_name, role, doctor_id, email, phone")
-    .eq("id", user.id)
+    .eq("id", session.user.id)
     .single()
 
-  return { user, profile }
+  return { user: session.user, profile }
 })

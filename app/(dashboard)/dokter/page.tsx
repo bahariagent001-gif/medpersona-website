@@ -21,6 +21,7 @@ export default async function DoctorsPage() {
     .from("doctors")
     .select("*")
     .order("created_at", { ascending: false })
+    .limit(100)
 
   const tierColors: Record<string, "default" | "info" | "warning" | "success"> = {
     starter: "secondary" as "default", growth: "info", pro: "warning", elite: "success",

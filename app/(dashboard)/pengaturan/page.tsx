@@ -4,18 +4,24 @@ import { getAuthProfile } from "@/lib/supabase/auth"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
+
 export const metadata = { title: "Pengaturan — MedPersona" }
 
 export default async function SettingsPage() {
-  const { user, profile: authProfile } = await getAuthProfile()
+  const { user, profile } = await getAuthProfile()
   if (!user) redirect("/masuk")
 
-  const supabase = await createClient()
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*, doctors(full_name, title, specialty)")
-    .eq("id", user.id)
-    .single()
+  // Fetch doctor details only if linked — single query instead of full profile refetch
+  let doctor: { full_name: string; title: string; specialty: string } | null = null
+  if (profile?.doctor_id) {
+    const supabase = await createClient()
+    const { data } = await supabase
+      .from("doctors")
+      .select("full_name, title, specialty")
+      .eq("id", profile.doctor_id)
+      .single()
+    doctor = data
+  }
 
   return (
     <div className="space-y-6">
@@ -31,7 +37,7 @@ export default async function SettingsPage() {
           <div className="grid gap-4 md:grid-cols-2">
             <div>
               <label className="text-sm font-medium text-gray-500">Nama</label>
-              <p className="mt-1 text-navy-dark">{profile?.full_name || "-"}</p>
+              <p className="mt-1 text-navy-dark">{doctor?.full_name || profile?.full_name || "-"}</p>
             </div>
             <div>
               <label className="text-sm font-medium text-gray-500">Email</label>
@@ -52,16 +58,16 @@ export default async function SettingsPage() {
       </Card>
 
       {/* Doctor profile link */}
-      {profile?.doctor_id && (
+      {profile?.doctor_id && doctor && (
         <Card>
           <CardHeader><CardTitle>Profil Dokter</CardTitle></CardHeader>
           <CardContent>
             <p className="text-sm text-gray-500">Akun ini terhubung dengan profil dokter:</p>
             <p className="mt-2 font-semibold text-navy-dark">
-              {(profile.doctors as { full_name: string; title: string; specialty: string })?.full_name || profile.doctor_id}
+              {doctor.full_name || profile.doctor_id}
             </p>
             <p className="text-sm text-gray-500">
-              {(profile.doctors as { full_name: string; title: string; specialty: string })?.specialty}
+              {doctor.specialty}
             </p>
           </CardContent>
         </Card>
