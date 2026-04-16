@@ -10,6 +10,8 @@ export const metadata = {
   title: "Laporan Laba Rugi — MedPersona",
 }
 
+export const revalidate = 60
+
 export default async function PnLPage({
   searchParams,
 }: {

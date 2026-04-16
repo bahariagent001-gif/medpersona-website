@@ -8,6 +8,8 @@ import Link from "next/link"
 
 export const metadata = { title: "Pengeluaran — MedPersona" }
 
+export const revalidate = 60
+
 export default async function ExpensesPage({
   searchParams,
 }: {
@@ -20,7 +22,7 @@ export default async function ExpensesPage({
   const supabase = await createClient()
 
   const month = params.month || new Date().toISOString().slice(0, 7)
-  const { data: expenses } = await supabase.from("expenses").select("*").eq("month", month).order("recorded_at", { ascending: false })
+  const { data: expenses } = await supabase.from("expenses").select("id, item, category, description, amount_idr").eq("month", month).order("recorded_at", { ascending: false }).limit(200)
 
   const byCategory = (expenses || []).reduce((acc, e) => {
     acc[e.category] = (acc[e.category] || 0) + (e.amount_idr || 0)

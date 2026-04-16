@@ -9,6 +9,8 @@ import Link from "next/link"
 
 export const metadata = { title: "Pendapatan — MedPersona" }
 
+export const revalidate = 60
+
 export default async function RevenuePage() {
   const { user, profile } = await getAuthProfile()
   if (!user) redirect("/masuk")
@@ -19,6 +21,7 @@ export default async function RevenuePage() {
     .from("doctors")
     .select("id, full_name, tier, monthly_cost_idr, subscription_status, subscription_started")
     .order("monthly_cost_idr", { ascending: false })
+    .limit(100)
 
   const activeDoctors = doctors?.filter(d => d.subscription_status === "active") || []
   const mrr = activeDoctors.reduce((s, d) => s + (d.monthly_cost_idr || 0), 0)

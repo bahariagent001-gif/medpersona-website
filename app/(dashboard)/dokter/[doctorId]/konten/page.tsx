@@ -37,7 +37,7 @@ export default async function DoctorContentPage({
 
   const { data: items } = await supabase
     .from("content_items")
-    .select("*")
+    .select("id, topic_title, platform, status, planned_date, content_type")
     .eq("doctor_id", doctorId)
     .order("planned_date", { ascending: false })
     .limit(100)

@@ -7,6 +7,8 @@ import Link from "next/link"
 
 export const metadata = { title: "Catatan Laporan Keuangan — MedPersona" }
 
+export const revalidate = 60
+
 export default async function FinancialNotesPage() {
   const { user, profile } = await getAuthProfile()
   if (!user) redirect("/masuk")

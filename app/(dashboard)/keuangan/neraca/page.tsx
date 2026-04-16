@@ -10,6 +10,8 @@ export const metadata = {
   title: "Neraca — MedPersona",
 }
 
+export const revalidate = 60
+
 export default async function BalanceSheetPage({
   searchParams,
 }: {
@@ -32,9 +34,9 @@ export default async function BalanceSheetPage({
     .single()
 
   // Calculate from transactions if no stored report
-  const { data: paidInvoices } = await supabase.from("invoices").select("amount_idr").eq("status", "paid")
-  const { data: pendingInvoices } = await supabase.from("invoices").select("amount_idr").eq("status", "pending")
-  const { data: allExpenses } = await supabase.from("expenses").select("amount_idr")
+  const { data: paidInvoices } = await supabase.from("invoices").select("amount_idr").eq("status", "paid").limit(1000)
+  const { data: pendingInvoices } = await supabase.from("invoices").select("amount_idr").eq("status", "pending").limit(1000)
+  const { data: allExpenses } = await supabase.from("expenses").select("amount_idr").limit(1000)
 
   const totalRevenue = paidInvoices?.reduce((s, i) => s + (i.amount_idr || 0), 0) || 0
   const totalExpenses = allExpenses?.reduce((s, e) => s + (e.amount_idr || 0), 0) || 0

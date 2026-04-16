@@ -18,7 +18,7 @@ export default async function DoctorDetailPage({ params }: { params: Promise<{ d
   if (!user) redirect("/masuk")
   const supabase = await createClient()
 
-  const { data: doctor } = await supabase.from("doctors").select("*").eq("id", doctorId).single()
+  const { data: doctor } = await supabase.from("doctors").select("id, full_name, specialty, tier, subscription_status, monthly_cost_idr, institution, location, whatsapp_number, platforms").eq("id", doctorId).single()
   if (!doctor) notFound()
 
   const [
@@ -32,7 +32,7 @@ export default async function DoctorDetailPage({ params }: { params: Promise<{ d
     supabase.from("content_items").select("*", { count: "exact", head: true }).eq("doctor_id", doctorId).eq("status", "pending_review"),
     supabase.from("content_items").select("*", { count: "exact", head: true }).eq("doctor_id", doctorId).eq("status", "posted"),
     supabase.from("content_items").select("id, topic_title, platform, status, planned_date").eq("doctor_id", doctorId).order("created_at", { ascending: false }).limit(10),
-    supabase.from("invoices").select("*").eq("doctor_id", doctorId).order("created_at", { ascending: false }).limit(5),
+    supabase.from("invoices").select("id, period, type, amount_idr, status, paid_at, created_at").eq("doctor_id", doctorId).order("created_at", { ascending: false }).limit(5),
   ])
 
   const platformList = Object.keys(doctor.platforms || {}).join(", ") || "-"

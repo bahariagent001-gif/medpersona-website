@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge"
 
 export const metadata = { title: "Kalender Konten — MedPersona" }
 
+export const revalidate = 30
+
 const STATUS_COLORS: Record<string, "secondary" | "info" | "warning" | "success" | "danger"> = {
   planned: "secondary",
   drafted: "info",

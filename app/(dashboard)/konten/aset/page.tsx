@@ -8,6 +8,8 @@ import { Image, Video, FileText } from "lucide-react"
 
 export const metadata = { title: "Aset Konten — MedPersona" }
 
+export const revalidate = 60
+
 export default async function AssetLibraryPage() {
   const { user } = await getAuthProfile()
   if (!user) redirect("/masuk")

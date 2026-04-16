@@ -29,7 +29,7 @@ export default async function ContentApprovalPage({
   const supabase = await createClient()
   const { data: content } = await supabase
     .from("content_items")
-    .select("*")
+    .select("id, topic_title, platform, status, content_type, copy_hook, copy_body, copy_cta, caption, hashtags, planned_date, funnel_stage, doctor_id, personal_upload, approval_notes")
     .eq("id", contentId)
     .single()
 

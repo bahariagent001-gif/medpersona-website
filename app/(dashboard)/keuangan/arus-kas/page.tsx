@@ -10,6 +10,8 @@ export const metadata = {
   title: "Arus Kas — MedPersona",
 }
 
+export const revalidate = 60
+
 export default async function CashFlowPage({
   searchParams,
 }: {

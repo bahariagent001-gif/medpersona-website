@@ -28,7 +28,7 @@ export default async function CRMPage() {
   const supabase = await createClient()
   const { data: leads } = await supabase
     .from("leads")
-    .select("*")
+    .select("id, name, specialty, source, stage, score, tier_interest, phone, created_at")
     .order("created_at", { ascending: false })
     .limit(200)
 

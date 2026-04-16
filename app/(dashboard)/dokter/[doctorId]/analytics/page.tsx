@@ -20,8 +20,8 @@ export default async function DoctorAnalyticsPage({
 
   const [{ data: doctor }, { data: items }, { data: usage }] = await Promise.all([
     supabase.from("doctors").select("id, full_name, title, platforms").eq("id", doctorId).single(),
-    supabase.from("content_items").select("*").eq("doctor_id", doctorId).eq("status", "posted").order("planned_date", { ascending: false }).limit(50),
-    supabase.from("monthly_usage").select("*").eq("doctor_id", doctorId).order("month", { ascending: false }).limit(6),
+    supabase.from("content_items").select("id, topic_title, platform, planned_date, performance, status").eq("doctor_id", doctorId).eq("status", "posted").order("planned_date", { ascending: false }).limit(50),
+    supabase.from("monthly_usage").select("month, posts_published, videos_published, revisions_used").eq("doctor_id", doctorId).order("month", { ascending: false }).limit(6),
   ])
 
   if (!doctor) notFound()

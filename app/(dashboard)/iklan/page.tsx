@@ -9,6 +9,8 @@ import { Megaphone, DollarSign, MousePointerClick, Users } from "lucide-react"
 
 export const metadata = { title: "Iklan — MedPersona" }
 
+export const revalidate = 60
+
 export default async function AdsPage() {
   const { user, profile } = await getAuthProfile()
   if (!user) redirect("/masuk")
@@ -17,7 +19,7 @@ export default async function AdsPage() {
   const supabase = await createClient()
   const { data: campaigns } = await supabase
     .from("ad_campaigns")
-    .select("*")
+    .select("id, campaign_name, platform, spend_idr, leads, clicks, status, budget_daily_idr, created_at")
     .order("created_at", { ascending: false })
     .limit(50)
 

@@ -54,7 +54,7 @@ async function AdminDashboard() {
     supabase.from("content_items").select("*", { count: "exact", head: true }).eq("status", "pending_review"),
     supabase.from("content_items").select("*", { count: "exact", head: true }).eq("status", "posted"),
     supabase.from("doctors").select("id, full_name, specialty, tier, subscription_status, monthly_cost_idr").order("created_at", { ascending: false }).limit(10),
-    supabase.from("leads").select("*").order("created_at", { ascending: false }).limit(5),
+    supabase.from("leads").select("id, name, specialty, source, stage, score").order("created_at", { ascending: false }).limit(5),
     supabase.from("content_items").select("id, doctor_id, topic_title, platform, status, planned_date").order("created_at", { ascending: false }).limit(10),
   ])
 
@@ -272,7 +272,7 @@ async function DoctorDashboard({ doctorId }: { doctorId?: string }) {
     { count: postedCount },
     { data: pendingInvoices },
   ] = await Promise.all([
-    supabase.from("doctors").select("*").eq("id", doctorId).single(),
+    supabase.from("doctors").select("id, full_name, tier, subscription_status, subscription_expires, monthly_cost_idr").eq("id", doctorId).single(),
     supabase.from("content_items").select("id, topic_title, platform, status, planned_date").eq("doctor_id", doctorId).eq("status", "pending_review").order("planned_date"),
     supabase.from("content_items").select("*", { count: "exact", head: true }).eq("doctor_id", doctorId).eq("status", "approved"),
     supabase.from("content_items").select("*", { count: "exact", head: true }).eq("doctor_id", doctorId).eq("status", "posted"),
