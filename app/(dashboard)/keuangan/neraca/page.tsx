@@ -25,18 +25,13 @@ export default async function BalanceSheetPage({
 
   const period = params.period || new Date().toISOString().slice(0, 7)
 
-  // Fetch stored report or calculate
-  const { data: report } = await supabase
-    .from("financial_reports")
-    .select("data, notes")
-    .eq("report_type", "balance_sheet")
-    .eq("period", period)
-    .single()
-
-  // Calculate from transactions if no stored report
-  const { data: paidInvoices } = await supabase.from("invoices").select("amount_idr").eq("status", "paid").limit(1000)
-  const { data: pendingInvoices } = await supabase.from("invoices").select("amount_idr").eq("status", "pending").limit(1000)
-  const { data: allExpenses } = await supabase.from("expenses").select("amount_idr").limit(1000)
+  // Fetch stored report + transaction data in parallel
+  const [{ data: report }, { data: paidInvoices }, { data: pendingInvoices }, { data: allExpenses }] = await Promise.all([
+    supabase.from("financial_reports").select("data, notes").eq("report_type", "balance_sheet").eq("period", period).single(),
+    supabase.from("invoices").select("amount_idr").eq("status", "paid").limit(1000),
+    supabase.from("invoices").select("amount_idr").eq("status", "pending").limit(1000),
+    supabase.from("expenses").select("amount_idr").limit(1000),
+  ])
 
   const totalRevenue = paidInvoices?.reduce((s, i) => s + (i.amount_idr || 0), 0) || 0
   const totalExpenses = allExpenses?.reduce((s, e) => s + (e.amount_idr || 0), 0) || 0

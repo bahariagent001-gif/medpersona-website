@@ -7,6 +7,8 @@ import { formatShortDate } from "@/lib/utils"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 
+export const revalidate = 60
+
 const STATUS_VARIANT: Record<string, "secondary" | "info" | "warning" | "success" | "danger"> = {
   planned: "secondary",
   drafted: "info",

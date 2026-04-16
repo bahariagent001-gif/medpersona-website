@@ -1,23 +1,20 @@
-import { redirect } from "next/navigation"
 import { getAuthProfile } from "@/lib/supabase/auth"
 import { DashboardShell } from "./dashboard-shell"
 
-export default async function DashboardLayout({
+// Auth promise type for passing to client components via use()
+export type AuthData = Awaited<ReturnType<typeof getAuthProfile>>
+
+export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const { user, profile } = await getAuthProfile()
-
-  if (!user) {
-    redirect("/masuk")
-  }
-
-  const userName = profile?.full_name || user.email || "User"
-  const userRole = profile?.role || "doctor"
+  // Start auth but DON'T await — proxy.ts already handles unauthenticated redirects.
+  // Not awaiting cookies() here unblocks loading.tsx files for instant navigation.
+  const authPromise = getAuthProfile()
 
   return (
-    <DashboardShell userName={userName} userRole={userRole}>
+    <DashboardShell authPromise={authPromise}>
       {children}
     </DashboardShell>
   )

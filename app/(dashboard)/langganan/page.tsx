@@ -9,6 +9,8 @@ export const metadata = {
   title: "Langganan — MedPersona",
 }
 
+export const revalidate = 60
+
 const TIER_DETAILS: Record<string, { label: string; posts: number; videos: number; revisions: number; platforms: string }> = {
   starter: { label: "Starter", posts: 22, videos: 5, revisions: 8, platforms: "Instagram" },
   growth: { label: "Growth", posts: 40, videos: 12, revisions: 15, platforms: "Instagram + TikTok" },

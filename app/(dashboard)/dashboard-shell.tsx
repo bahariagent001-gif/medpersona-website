@@ -1,21 +1,27 @@
 "use client"
 
-import { useState } from "react"
+import { useState, use, Suspense } from "react"
 import { Sidebar } from "@/components/dashboard/sidebar"
 import { Topbar } from "@/components/dashboard/topbar"
-import { cn } from "@/lib/utils"
+import type { AuthData } from "./layout"
 
-interface DashboardShellProps {
+function UserAwareShell({
+  authPromise,
+  children,
+  mobileMenuOpen,
+  setMobileMenuOpen,
+}: {
+  authPromise: Promise<AuthData>
   children: React.ReactNode
-  userName: string
-  userRole: string
-}
-
-export function DashboardShell({ children, userName, userRole }: DashboardShellProps) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  mobileMenuOpen: boolean
+  setMobileMenuOpen: (v: boolean) => void
+}) {
+  const { user, profile } = use(authPromise)
+  const userName = profile?.full_name || user?.email || "User"
+  const userRole = profile?.role || "doctor"
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    <>
       {/* Sidebar - desktop */}
       <div className="hidden lg:block">
         <Sidebar userRole={userRole} />
@@ -45,6 +51,45 @@ export function DashboardShell({ children, userName, userRole }: DashboardShellP
           {children}
         </main>
       </div>
+    </>
+  )
+}
+
+function ShellSkeleton({ children }: { children: React.ReactNode }) {
+  return (
+    <>
+      {/* Sidebar skeleton */}
+      <div className="hidden lg:block w-64 shrink-0 border-r border-gray-100 bg-white" />
+      {/* Main content with topbar skeleton */}
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <div className="h-16 shrink-0 border-b border-gray-100 bg-white" />
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
+          {children}
+        </main>
+      </div>
+    </>
+  )
+}
+
+export function DashboardShell({
+  authPromise,
+  children,
+}: {
+  authPromise: Promise<AuthData>
+  children: React.ReactNode
+}) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  return (
+    <div className="flex h-screen overflow-hidden bg-gray-50">
+      <Suspense fallback={<ShellSkeleton>{children}</ShellSkeleton>}>
+        <UserAwareShell
+          authPromise={authPromise}
+          children={children}
+          mobileMenuOpen={mobileMenuOpen}
+          setMobileMenuOpen={setMobileMenuOpen}
+        />
+      </Suspense>
     </div>
   )
 }

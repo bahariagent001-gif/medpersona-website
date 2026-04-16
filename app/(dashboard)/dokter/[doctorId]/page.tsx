@@ -8,6 +8,8 @@ import { KpiCard } from "@/components/dashboard/kpi-card"
 import { ArrowLeft, Calendar, FileText, TrendingUp, Users } from "lucide-react"
 import Link from "next/link"
 
+export const revalidate = 60
+
 export async function generateMetadata({ params }: { params: Promise<{ doctorId: string }> }) {
   return { title: "Detail Dokter — MedPersona" }
 }

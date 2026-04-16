@@ -25,16 +25,12 @@ export default async function CashFlowPage({
 
   const period = params.period || new Date().toISOString().slice(0, 7)
 
-  // Fetch data
-  const { data: report } = await supabase
-    .from("financial_reports")
-    .select("data, notes")
-    .eq("report_type", "cash_flow")
-    .eq("period", period)
-    .single()
-
-  const { data: invoices } = await supabase.from("invoices").select("amount_idr, type").eq("status", "paid").eq("period", period)
-  const { data: expenses } = await supabase.from("expenses").select("amount_idr, category").eq("month", period)
+  // Fetch all data in parallel
+  const [{ data: report }, { data: invoices }, { data: expenses }] = await Promise.all([
+    supabase.from("financial_reports").select("data, notes").eq("report_type", "cash_flow").eq("period", period).single(),
+    supabase.from("invoices").select("amount_idr, type").eq("status", "paid").eq("period", period),
+    supabase.from("expenses").select("amount_idr, category").eq("month", period),
+  ])
 
   const totalIncome = invoices?.reduce((s, i) => s + (i.amount_idr || 0), 0) || 0
   const totalExpense = expenses?.reduce((s, e) => s + (e.amount_idr || 0), 0) || 0

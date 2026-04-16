@@ -26,20 +26,12 @@ export default async function PnLPage({
   const period = params.period || new Date().toISOString().slice(0, 7)
   const prevMonth = getPrevMonth(period)
 
-  // Fetch current and previous month data
-  const [currentData, prevData] = await Promise.all([
+  // Fetch current month, previous month, and stored report in parallel
+  const [currentData, prevData, { data: storedReport }] = await Promise.all([
     fetchPnLData(supabase, period),
     fetchPnLData(supabase, prevMonth),
+    supabase.from("financial_reports").select("data, notes").eq("report_type", "pnl").eq("period", period).eq("period_type", "monthly").single(),
   ])
-
-  // Check for stored report
-  const { data: storedReport } = await supabase
-    .from("financial_reports")
-    .select("data, notes")
-    .eq("report_type", "pnl")
-    .eq("period", period)
-    .eq("period_type", "monthly")
-    .single()
 
   const pnl = storedReport?.data || currentData
 

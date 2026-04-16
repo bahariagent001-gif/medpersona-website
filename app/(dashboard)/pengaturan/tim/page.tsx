@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge"
 
 export const metadata = { title: "Manajemen Tim — MedPersona" }
 
+export const revalidate = 60
+
 const ROLE_LABELS: Record<string, string> = {
   super_admin: "Super Admin",
   admin: "Admin",
@@ -30,6 +32,7 @@ export default async function TeamPage() {
     .from("profiles")
     .select("id, full_name, email, role, created_at")
     .order("created_at", { ascending: true })
+    .limit(100)
 
   return (
     <div className="space-y-6">

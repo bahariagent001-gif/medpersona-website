@@ -16,15 +16,15 @@ export default async function AssetLibraryPage() {
 
   const supabase = await createClient()
 
-  // Fetch content items that have assets
-  const { data: items } = await supabase
-    .from("content_items")
-    .select("id, topic_title, doctor_id, platform, content_type, assets, status, planned_date")
-    .not("assets", "is", null)
-    .order("created_at", { ascending: false })
-    .limit(100)
-
-  const { data: doctors } = await supabase.from("doctors").select("id, full_name")
+  // Fetch content items and doctors in parallel
+  const [{ data: items }, { data: doctors }] = await Promise.all([
+    supabase.from("content_items")
+      .select("id, topic_title, doctor_id, platform, content_type, assets, status, planned_date")
+      .not("assets", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(100),
+    supabase.from("doctors").select("id, full_name"),
+  ])
   const doctorMap: Record<string, string> = {}
   doctors?.forEach((d) => { doctorMap[d.id] = d.full_name })
 

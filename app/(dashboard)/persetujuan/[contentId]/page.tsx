@@ -8,6 +8,8 @@ import { ArrowLeft, Calendar, Globe, Hash, FileText } from "lucide-react"
 import Link from "next/link"
 import { ApprovalActions } from "./approval-actions"
 
+export const revalidate = 30
+
 export async function generateMetadata({
   params,
 }: {

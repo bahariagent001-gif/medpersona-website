@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge"
 
 export const metadata = { title: "Pengaturan — MedPersona" }
 
+export const revalidate = 60
+
 export default async function SettingsPage() {
   const { user, profile } = await getAuthProfile()
   if (!user) redirect("/masuk")
