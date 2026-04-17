@@ -40,14 +40,7 @@ export default async function SubscriptionPage() {
   const supabase = await createClient()
 
   if (!profile?.doctor_id) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="text-center">
-          <h2 className="text-xl font-bold text-navy-dark">Akun belum terhubung</h2>
-          <p className="mt-2 text-gray-500">Hubungi admin untuk menghubungkan akun Anda.</p>
-        </div>
-      </div>
-    )
+    redirect("/dashboard")
   }
 
   const [

@@ -16,6 +16,7 @@ import {
   AlertCircle,
   CreditCard,
 } from "lucide-react"
+import { DoctorSetupForm } from "./doctor-setup-form"
 
 export const metadata = {
   title: "Dashboard — MedPersona",
@@ -33,7 +34,11 @@ export default async function DashboardPage() {
     return <AdminDashboard />
   }
 
-  return <DoctorDashboard doctorId={profile?.doctor_id} />
+  if (!profile?.doctor_id) {
+    return <DoctorSetupForm userName={profile?.full_name || user.email?.split("@")[0]} />
+  }
+
+  return <DoctorDashboard doctorId={profile.doctor_id} />
 }
 
 async function AdminDashboard() {
@@ -251,19 +256,8 @@ async function AdminDashboard() {
   )
 }
 
-async function DoctorDashboard({ doctorId }: { doctorId?: string }) {
+async function DoctorDashboard({ doctorId }: { doctorId: string }) {
   const supabase = await createClient()
-
-  if (!doctorId) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="text-center">
-          <h2 className="text-xl font-bold text-navy-dark">Akun belum terhubung</h2>
-          <p className="mt-2 text-gray-500">Hubungi admin untuk menghubungkan akun Anda dengan profil dokter.</p>
-        </div>
-      </div>
-    )
-  }
 
   const [
     { data: doctor },
