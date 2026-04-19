@@ -75,7 +75,8 @@ const navigation: NavItem[] = [
     adminOnly: true,
     children: [
       { label: "Semua Konten", href: "/konten" },
-      { label: "Kalender", href: "/konten/kalender" },
+      { label: "Kalender Dokter", href: "/konten/kalender" },
+      { label: "MedPersona", href: "/konten/medpersona" },
       { label: "Aset", href: "/konten/aset" },
     ],
   },

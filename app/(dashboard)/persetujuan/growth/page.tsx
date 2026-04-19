@@ -63,7 +63,16 @@ export default async function GrowthApprovalsPage() {
                   {JSON.stringify(a.payload, null, 2)}
                 </pre>
               </details>
-              <GrowthApprovalActions approvalId={a.id} />
+              <GrowthApprovalActions
+                approvalId={a.id}
+                approvalType={a.type}
+                caption={
+                  a.type === "organic_post"
+                    ? ((a.payload as { caption_final?: string; content?: { caption?: string } })?.caption_final ||
+                       (a.payload as { content?: { caption?: string } })?.content?.caption || "")
+                    : undefined
+                }
+              />
             </CardContent>
           </Card>
         ))}
