@@ -47,7 +47,10 @@ export async function proxy(request: NextRequest) {
       pathname.startsWith("/konten") ||
       pathname.startsWith("/persetujuan") ||
       pathname.startsWith("/langganan") ||
-      pathname.startsWith("/pengaturan")) {
+      pathname.startsWith("/pengaturan") ||
+      pathname.startsWith("/organic") ||
+      pathname.startsWith("/seo") ||
+      pathname.startsWith("/leads")) {
     if (!session) {
       const url = request.nextUrl.clone()
       url.pathname = "/masuk"
