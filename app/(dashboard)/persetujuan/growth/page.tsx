@@ -4,6 +4,7 @@ import { getAuthProfile } from "@/lib/supabase/auth"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { GrowthApprovalActions } from "./growth-approval-actions"
+import { ApprovalPreview } from "./approval-preview"
 
 export const metadata = { title: "Growth Approvals — MedPersona" }
 export const revalidate = 15
@@ -53,7 +54,8 @@ export default async function GrowthApprovalsPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <details className="mb-4">
+              <ApprovalPreview payload={a.payload} />
+              <details className="mb-4 mt-4">
                 <summary className="cursor-pointer text-xs font-medium text-gray-500 hover:text-gray-700">
                   Lihat payload lengkap
                 </summary>
