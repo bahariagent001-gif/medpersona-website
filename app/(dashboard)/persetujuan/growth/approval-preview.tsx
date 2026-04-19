@@ -4,6 +4,7 @@
  * visual image, copy (headline + primary text), CTA, targeting summary,
  * and budget. Falls back gracefully when fields are missing.
  */
+import { CarouselLightbox } from "./carousel-lightbox"
 
 type Payload = {
   visual?: {
@@ -53,26 +54,13 @@ export function ApprovalPreview({ payload }: { payload: Payload | null | undefin
   const ageRange = tg.age_min && tg.age_max ? `${tg.age_min}–${tg.age_max}` : undefined
   const interests = tg.interests?.slice(0, 5).join(", ")
 
+  // If carousel, use full-width layout (lightbox thumb strip needs space)
+  const isCarousel = slides && slides.length > 1
+
   return (
-    <div className="grid gap-4 md:grid-cols-[200px_1fr]">
-      {slides && slides.length > 1 ? (
-        <div className="space-y-1">
-          <div className="flex gap-1 overflow-x-auto rounded-md border border-gray-200 bg-gray-50 p-1">
-            {slides.map((u, i) => (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                key={i}
-                src={u}
-                alt={`slide ${i + 1}`}
-                className="h-24 flex-shrink-0 rounded object-cover"
-                loading="lazy"
-              />
-            ))}
-          </div>
-          <p className="px-1 text-[10px] uppercase text-gray-400">
-            carousel · {slides.length} slides
-          </p>
-        </div>
+    <div className={isCarousel ? "space-y-4" : "grid gap-4 md:grid-cols-[200px_1fr]"}>
+      {isCarousel ? (
+        <CarouselLightbox slides={slides!} caption={copy.headline} thumbSize={160} />
       ) : imageUrl ? (
         <div className="overflow-hidden rounded-md border border-gray-200 bg-gray-50">
           {/* eslint-disable-next-line @next/next/no-img-element */}
