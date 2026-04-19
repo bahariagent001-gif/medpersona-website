@@ -18,7 +18,7 @@ export default async function ExpensesPage({
   const params = await searchParams
   const { user, profile } = await getAuthProfile()
   if (!user) redirect("/masuk")
-  if (!["super_admin", "admin"].includes(profile?.role || "")) redirect("/dashboard")
+  if (!["super_admin", "admin"].includes(profile?.role || "")) redirect("/dashboard?akses=ditolak")
   const supabase = await createClient()
 
   const month = params.month || new Date().toISOString().slice(0, 7)

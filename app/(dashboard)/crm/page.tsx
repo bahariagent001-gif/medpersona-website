@@ -23,7 +23,7 @@ const STAGES = [
 export default async function CRMPage() {
   const { user, profile } = await getAuthProfile()
   if (!user) redirect("/masuk")
-  if (!["super_admin", "admin", "staff"].includes(profile?.role || "")) redirect("/dashboard")
+  if (!["super_admin", "admin", "staff"].includes(profile?.role || "")) redirect("/dashboard?akses=ditolak")
 
   const supabase = await createClient()
   const { data: leads } = await supabase
@@ -106,7 +106,7 @@ export default async function CRMPage() {
                   </Card>
                 ))}
                 {stage.leads.length === 0 && (
-                  <p className="py-8 text-center text-xs text-gray-400">Kosong</p>
+                  <p className="py-8 text-center text-xs text-gray-400">Belum ada lead di tahap ini</p>
                 )}
               </div>
             </div>

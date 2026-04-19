@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     // Call Xendit API to create invoice
     const xenditKey = process.env.XENDIT_SECRET_KEY
     if (!xenditKey) {
-      return NextResponse.json({ error: "Payment gateway belum dikonfigurasi." }, { status: 503 })
+      return NextResponse.json({ error: "Layanan pembayaran sedang tidak tersedia. Silakan coba lagi nanti atau hubungi support@medpersona.id" }, { status: 503 })
     }
 
     const xenditPayload = {

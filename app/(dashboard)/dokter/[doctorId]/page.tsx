@@ -16,8 +16,9 @@ export async function generateMetadata({ params }: { params: Promise<{ doctorId:
 
 export default async function DoctorDetailPage({ params }: { params: Promise<{ doctorId: string }> }) {
   const { doctorId } = await params
-  const { user } = await getAuthProfile()
+  const { user, profile } = await getAuthProfile()
   if (!user) redirect("/masuk")
+  if (!["super_admin", "admin", "staff"].includes(profile?.role || "")) redirect("/dashboard?akses=ditolak")
   const supabase = await createClient()
 
   const { data: doctor } = await supabase.from("doctors").select("id, full_name, specialty, tier, subscription_status, monthly_cost_idr, institution, location, whatsapp_number, platforms").eq("id", doctorId).single()

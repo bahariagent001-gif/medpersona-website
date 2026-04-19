@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { formatCurrency } from "@/lib/utils"
 import { DollarSign, TrendingUp, TrendingDown, Receipt, CreditCard, PieChart, BarChart3 } from "lucide-react"
 import Link from "next/link"
+import { EmptyState } from "@/components/ui/empty-state"
 
 export const metadata = {
   title: "Keuangan — MedPersona",
@@ -16,7 +17,7 @@ export const revalidate = 60
 export default async function FinancePage() {
   const { user, profile } = await getAuthProfile()
   if (!user) redirect("/masuk")
-  if (!["super_admin", "admin"].includes(profile?.role || "")) redirect("/dashboard")
+  if (!["super_admin", "admin"].includes(profile?.role || "")) redirect("/dashboard?akses=ditolak")
 
   const supabase = await createClient()
 
@@ -122,7 +123,13 @@ export default async function FinancePage() {
               ))}
             </div>
           ) : (
-            <p className="py-8 text-center text-sm text-gray-400">Belum ada dokter aktif</p>
+            <EmptyState
+              compact
+              icon={<DollarSign className="h-8 w-8" />}
+              title="Belum Ada Data Keuangan"
+              description="Data keuangan muncul setelah ada dokter dengan langganan aktif."
+              action={{ label: "Lihat Dokter", href: "/dokter" }}
+            />
           )}
         </CardContent>
       </Card>

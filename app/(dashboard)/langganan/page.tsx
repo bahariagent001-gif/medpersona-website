@@ -4,6 +4,7 @@ import { getAuthProfile } from "@/lib/supabase/auth"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
+import { EmptyState } from "@/components/ui/empty-state"
 
 export const metadata = {
   title: "Langganan — MedPersona",
@@ -207,7 +208,11 @@ export default async function SubscriptionPage() {
               </table>
             </div>
           ) : (
-            <p className="py-8 text-center text-gray-400">Belum ada riwayat pembayaran</p>
+            <EmptyState
+              compact
+              title="Belum Ada Riwayat"
+              description="Riwayat pembayaran akan muncul setelah invoice pertama dibuat."
+            />
           )}
         </CardContent>
       </Card>

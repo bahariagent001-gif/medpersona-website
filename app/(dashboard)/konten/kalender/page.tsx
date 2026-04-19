@@ -46,8 +46,9 @@ export default async function ContentCalendarPage({
   const year = sp.year ? parseInt(sp.year) : now.getFullYear()
   const month = sp.month ? parseInt(sp.month) - 1 : now.getMonth()
 
-  const { user } = await getAuthProfile()
+  const { user, profile } = await getAuthProfile()
   if (!user) redirect("/masuk")
+  if (!["super_admin", "admin", "staff"].includes(profile?.role || "")) redirect("/dashboard?akses=ditolak")
 
   const supabase = await createClient()
 

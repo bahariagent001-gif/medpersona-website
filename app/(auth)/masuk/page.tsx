@@ -50,7 +50,9 @@ export default async function LoginPage({
 
           {params.error && (
             <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              Autentikasi gagal. Silakan coba lagi.
+              {params.error === "auth_failed"
+                ? "Link login tidak valid atau sudah kadaluarsa. Silakan coba lagi."
+                : "Autentikasi gagal. Silakan coba lagi."}
             </div>
           )}
 

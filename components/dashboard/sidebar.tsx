@@ -26,6 +26,9 @@ import {
   FileSpreadsheet,
   PieChart,
   ImageIcon,
+  Sparkles,
+  Search,
+  Hash,
 } from "lucide-react"
 import { useState } from "react"
 
@@ -80,6 +83,10 @@ const navigation: NavItem[] = [
     label: "Persetujuan",
     href: "/persetujuan",
     icon: <CheckSquare className="h-5 w-5" />,
+    children: [
+      { label: "Konten Dokter", href: "/persetujuan" },
+      { label: "Growth (Iklan/SEO/Outreach)", href: "/persetujuan/growth" },
+    ],
   },
   {
     label: "Langganan",
@@ -97,6 +104,43 @@ const navigation: NavItem[] = [
     href: "/iklan",
     icon: <Megaphone className="h-5 w-5" />,
     adminOnly: true,
+    children: [
+      { label: "Ringkasan", href: "/iklan" },
+      { label: "Kreatif", href: "/iklan/kreatif" },
+      { label: "Performa Harian", href: "/iklan/performa" },
+    ],
+  },
+  {
+    label: "Organic",
+    href: "/organic",
+    icon: <Hash className="h-5 w-5" />,
+    adminOnly: true,
+    children: [
+      { label: "Ringkasan", href: "/organic" },
+      { label: "Hashtag", href: "/organic/hashtag" },
+      { label: "Kompetitor", href: "/organic/kompetitor" },
+    ],
+  },
+  {
+    label: "SEO",
+    href: "/seo",
+    icon: <Search className="h-5 w-5" />,
+    adminOnly: true,
+    children: [
+      { label: "Ringkasan", href: "/seo" },
+      { label: "Keyword", href: "/seo/keyword" },
+      { label: "Halaman", href: "/seo/halaman" },
+    ],
+  },
+  {
+    label: "Lead Hunter",
+    href: "/leads",
+    icon: <Sparkles className="h-5 w-5" />,
+    adminOnly: true,
+    children: [
+      { label: "Prospek", href: "/leads" },
+      { label: "Outreach", href: "/leads/outreach" },
+    ],
   },
   {
     label: "Pengaturan",

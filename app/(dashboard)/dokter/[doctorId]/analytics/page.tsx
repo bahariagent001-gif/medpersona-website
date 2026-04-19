@@ -16,8 +16,9 @@ export default async function DoctorAnalyticsPage({
   params: Promise<{ doctorId: string }>
 }) {
   const { doctorId } = await params
-  const { user } = await getAuthProfile()
+  const { user, profile } = await getAuthProfile()
   if (!user) redirect("/masuk")
+  if (!["super_admin", "admin", "staff"].includes(profile?.role || "")) redirect("/dashboard?akses=ditolak")
   const supabase = await createClient()
 
   const [{ data: doctor }, { data: items }, { data: usage }] = await Promise.all([
@@ -85,7 +86,7 @@ export default async function DoctorAnalyticsPage({
                 </tr>
               ))}
               {(!usage || usage.length === 0) && (
-                <tr><td colSpan={4} className="px-4 py-12 text-center text-gray-400">Belum ada data</td></tr>
+                <tr><td colSpan={4} className="px-4 py-12 text-center text-gray-400">Belum ada data analytics. Data muncul setelah konten dipublikasikan.</td></tr>
               )}
             </tbody>
           </table>
@@ -129,7 +130,7 @@ export default async function DoctorAnalyticsPage({
                   )
                 })}
               {(!items || items.length === 0) && (
-                <tr><td colSpan={5} className="px-4 py-12 text-center text-gray-400">Belum ada konten yang diposting</td></tr>
+                <tr><td colSpan={5} className="px-4 py-12 text-center text-gray-400">Belum ada konten yang diposting. Performa akan muncul setelah konten dipublikasikan.</td></tr>
               )}
             </tbody>
           </table>

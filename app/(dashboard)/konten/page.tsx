@@ -10,7 +10,7 @@ export const revalidate = 30
 export default async function ContentPage() {
   const { user, profile } = await getAuthProfile()
   if (!user) redirect("/masuk")
-  if (!["super_admin", "admin", "staff"].includes(profile?.role || "")) redirect("/dashboard")
+  if (!["super_admin", "admin", "staff"].includes(profile?.role || "")) redirect("/dashboard?akses=ditolak")
 
   const supabase = await createClient()
 

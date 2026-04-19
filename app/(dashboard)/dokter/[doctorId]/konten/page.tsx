@@ -26,8 +26,9 @@ export default async function DoctorContentPage({
   params: Promise<{ doctorId: string }>
 }) {
   const { doctorId } = await params
-  const { user } = await getAuthProfile()
+  const { user, profile } = await getAuthProfile()
   if (!user) redirect("/masuk")
+  if (!["super_admin", "admin", "staff"].includes(profile?.role || "")) redirect("/dashboard?akses=ditolak")
   const supabase = await createClient()
 
   const { data: doctor } = await supabase

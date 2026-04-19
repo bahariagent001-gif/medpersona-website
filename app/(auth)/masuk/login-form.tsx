@@ -25,14 +25,14 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
       const { error } = await supabase.auth.signInWithPassword({ email, password })
 
       if (error) {
-        setError("Email atau password salah: " + error.message)
+        setError("Email atau password salah. Periksa kembali dan coba lagi.")
         setLoading(false)
         return
       }
 
       window.location.href = redirectTo || "/dashboard"
     } catch (err) {
-      setError("Terjadi kesalahan: " + (err instanceof Error ? err.message : String(err)))
+      setError("Terjadi kesalahan. Silakan coba lagi.")
       setLoading(false)
     }
   }

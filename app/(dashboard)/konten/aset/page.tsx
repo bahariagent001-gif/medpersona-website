@@ -5,14 +5,16 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { formatShortDate } from "@/lib/utils"
 import { Image, Video, FileText } from "lucide-react"
+import { EmptyState } from "@/components/ui/empty-state"
 
 export const metadata = { title: "Aset Konten — MedPersona" }
 
 export const revalidate = 60
 
 export default async function AssetLibraryPage() {
-  const { user } = await getAuthProfile()
+  const { user, profile } = await getAuthProfile()
   if (!user) redirect("/masuk")
+  if (!["super_admin", "admin", "staff"].includes(profile?.role || "")) redirect("/dashboard?akses=ditolak")
 
   const supabase = await createClient()
 
@@ -72,8 +74,13 @@ export default async function AssetLibraryPage() {
           )
         })}
         {(!items || items.length === 0) && (
-          <div className="col-span-full py-20 text-center text-gray-400">
-            Belum ada aset konten
+          <div className="col-span-full">
+            <EmptyState
+              icon={<Image className="h-10 w-10" />}
+              title="Belum Ada Aset"
+              description="Aset muncul dari konten yang sudah disetujui dan dipublikasikan."
+              action={{ label: "Lihat Konten", href: "/konten" }}
+            />
           </div>
         )}
       </div>

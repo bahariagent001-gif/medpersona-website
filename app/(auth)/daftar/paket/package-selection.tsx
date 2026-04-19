@@ -55,7 +55,11 @@ export function PackageSelection() {
   const router = useRouter()
   const [selected, setSelected] = useState(searchParams.get("paket") || "")
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
+  const [error, setError] = useState(
+    searchParams.get("error") === "payment_failed"
+      ? "Pembayaran gagal. Silakan coba lagi atau pilih metode pembayaran lain."
+      : ""
+  )
 
   async function handleSelect(tier: string) {
     setSelected(tier)

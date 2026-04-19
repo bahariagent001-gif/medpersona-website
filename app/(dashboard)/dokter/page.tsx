@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { formatCurrency } from "@/lib/utils"
 import { Users } from "lucide-react"
 import Link from "next/link"
+import { EmptyState } from "@/components/ui/empty-state"
 
 export const metadata = { title: "Dokter — MedPersona" }
 
@@ -14,7 +15,7 @@ export const revalidate = 60
 export default async function DoctorsPage() {
   const { user, profile } = await getAuthProfile()
   if (!user) redirect("/masuk")
-  if (!["super_admin", "admin", "staff"].includes(profile?.role || "")) redirect("/dashboard")
+  if (!["super_admin", "admin", "staff"].includes(profile?.role || "")) redirect("/dashboard?akses=ditolak")
 
   const supabase = await createClient()
   const { data: doctors } = await supabase
@@ -65,9 +66,12 @@ export default async function DoctorsPage() {
           </Link>
         ))}
         {(!doctors || doctors.length === 0) && (
-          <div className="col-span-full py-20 text-center">
-            <Users className="mx-auto h-12 w-12 text-gray-300" />
-            <p className="mt-4 text-gray-500">Belum ada dokter terdaftar</p>
+          <div className="col-span-full">
+            <EmptyState
+              icon={<Users className="h-10 w-10" />}
+              title="Belum Ada Dokter"
+              description="Dokter akan muncul setelah mendaftar melalui form registrasi."
+            />
           </div>
         )}
       </div>

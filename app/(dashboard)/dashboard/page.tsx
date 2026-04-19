@@ -17,6 +17,7 @@ import {
   CreditCard,
 } from "lucide-react"
 import { DoctorSetupForm } from "./doctor-setup-form"
+import { EmptyState } from "@/components/ui/empty-state"
 
 export const metadata = {
   title: "Dashboard — MedPersona",
@@ -24,9 +25,15 @@ export const metadata = {
 
 export const revalidate = 60
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ pembayaran?: string; akses?: string }>
+}) {
   const { user, profile } = await getAuthProfile()
   if (!user) redirect("/masuk")
+
+  const params = await searchParams
 
   const isAdmin = ["super_admin", "admin"].includes(profile?.role || "")
 
@@ -38,7 +45,7 @@ export default async function DashboardPage() {
     return <DoctorSetupForm userName={profile?.full_name || user.email?.split("@")[0]} />
   }
 
-  return <DoctorDashboard doctorId={profile.doctor_id} />
+  return <DoctorDashboard doctorId={profile.doctor_id} pembayaran={params.pembayaran} aksesDitolak={params.akses === "ditolak"} />
 }
 
 async function AdminDashboard() {
@@ -152,7 +159,13 @@ async function AdminDashboard() {
                 ))}
               </div>
             ) : (
-              <p className="py-8 text-center text-sm text-gray-400">Belum ada dokter terdaftar</p>
+              <EmptyState
+                compact
+                icon={<Users className="h-8 w-8" />}
+                title="Belum Ada Dokter"
+                description="Dokter akan muncul di sini setelah mendaftar."
+                action={{ label: "Lihat Dokter", href: "/dokter" }}
+              />
             )}
           </CardContent>
         </Card>
@@ -191,7 +204,13 @@ async function AdminDashboard() {
                 ))}
               </div>
             ) : (
-              <p className="py-8 text-center text-sm text-gray-400">Belum ada konten</p>
+              <EmptyState
+                compact
+                icon={<Calendar className="h-8 w-8" />}
+                title="Belum Ada Konten"
+                description="Konten muncul setelah tim membuat draft untuk dokter."
+                action={{ label: "Kelola Konten", href: "/konten" }}
+              />
             )}
           </CardContent>
         </Card>
@@ -221,7 +240,13 @@ async function AdminDashboard() {
                 ))}
               </div>
             ) : (
-              <p className="py-8 text-center text-sm text-gray-400">Belum ada lead</p>
+              <EmptyState
+                compact
+                icon={<Target className="h-8 w-8" />}
+                title="Belum Ada Lead"
+                description="Lead muncul dari CRM atau form pendaftaran."
+                action={{ label: "Lihat CRM", href: "/crm" }}
+              />
             )}
           </CardContent>
         </Card>
@@ -256,7 +281,7 @@ async function AdminDashboard() {
   )
 }
 
-async function DoctorDashboard({ doctorId }: { doctorId: string }) {
+async function DoctorDashboard({ doctorId, pembayaran, aksesDitolak }: { doctorId: string; pembayaran?: string; aksesDitolak?: boolean }) {
   const supabase = await createClient()
 
   const [
@@ -279,6 +304,24 @@ async function DoctorDashboard({ doctorId }: { doctorId: string }) {
 
   return (
     <div className="space-y-6">
+      {aksesDitolak && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          Anda tidak memiliki akses ke halaman tersebut.
+        </div>
+      )}
+
+      {pembayaran === "berhasil" && (
+        <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+          Pembayaran berhasil! Langganan Anda sedang diproses dan akan aktif dalam beberapa menit.
+        </div>
+      )}
+
+      {pembayaran === "pending" && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          Tagihan berhasil dibuat. Silakan selesaikan pembayaran untuk mengaktifkan langganan Anda.
+        </div>
+      )}
+
       <div>
         <h1 className="text-2xl font-bold text-navy-dark">
           Halo, {doctor?.full_name || "Dokter"}
@@ -381,9 +424,12 @@ async function DoctorDashboard({ doctorId }: { doctorId: string }) {
               ))}
             </div>
           ) : (
-            <p className="py-8 text-center text-sm text-gray-400">
-              Tidak ada konten yang menunggu persetujuan Anda saat ini.
-            </p>
+            <EmptyState
+              compact
+              icon={<FileText className="h-8 w-8" />}
+              title="Semua Beres!"
+              description="Tidak ada konten yang perlu Anda review saat ini."
+            />
           )}
         </CardContent>
       </Card>

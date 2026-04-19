@@ -12,7 +12,7 @@ export const revalidate = 60
 export default async function FinancialNotesPage() {
   const { user, profile } = await getAuthProfile()
   if (!user) redirect("/masuk")
-  if (!["super_admin", "admin"].includes(profile?.role || "")) redirect("/dashboard")
+  if (!["super_admin", "admin"].includes(profile?.role || "")) redirect("/dashboard?akses=ditolak")
   const supabase = await createClient()
 
   const { data: reports } = await supabase

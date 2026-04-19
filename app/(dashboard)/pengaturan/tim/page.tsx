@@ -25,7 +25,7 @@ const ROLE_COLORS: Record<string, "success" | "info" | "warning" | "secondary"> 
 export default async function TeamPage() {
   const { user, profile } = await getAuthProfile()
   if (!user) redirect("/masuk")
-  if (!["super_admin", "admin"].includes(profile?.role || "")) redirect("/dashboard")
+  if (!["super_admin", "admin"].includes(profile?.role || "")) redirect("/dashboard?akses=ditolak")
 
   const supabase = await createClient()
   const { data: members } = await supabase
@@ -38,7 +38,7 @@ export default async function TeamPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-navy-dark">Manajemen Tim</h1>
-        <p className="text-sm text-gray-500">Kelola anggota tim dan hak akses</p>
+        <p className="text-sm text-gray-500">Daftar anggota tim dan hak akses mereka</p>
       </div>
 
       <Card>
