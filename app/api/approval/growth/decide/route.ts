@@ -25,6 +25,39 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "bad_request" }, { status: 400 })
   }
 
+  const workerBase = process.env.WORKER_EXECUTE_URL?.replace(/\/api\/execute-approval\/?$/, "")
+  const workerSecret = process.env.WORKER_EXECUTE_SECRET || ""
+
+  // EDIT: delegate to Python regenerate endpoint. It marks original as
+  // superseded, generates a new draft with the feedback applied, and queues
+  // it as a fresh approval.
+  if (decision === "edit") {
+    if (!note || !note.trim()) {
+      return NextResponse.json({ error: "feedback required for edit" }, { status: 400 })
+    }
+    if (!workerBase) {
+      return NextResponse.json({ error: "WORKER_EXECUTE_URL not configured" }, { status: 500 })
+    }
+    try {
+      const res = await fetch(`${workerBase}/api/regenerate-approval`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Worker-Secret": workerSecret,
+        },
+        body: JSON.stringify({ approval_id: approvalId, feedback: note }),
+      })
+      const result = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        return NextResponse.json({ error: result.error || "regenerate failed" }, { status: res.status })
+      }
+      return NextResponse.json({ ok: true, regenerated: result })
+    } catch (e) {
+      return NextResponse.json({ error: e instanceof Error ? e.message : "unknown" }, { status: 500 })
+    }
+  }
+
+  // APPROVE / REJECT: update row, fire worker for approve
   const supabase = await createClient()
   const { data, error } = await supabase
     .from("approvals_pending")
@@ -40,7 +73,6 @@ export async function POST(req: Request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  // Fire-and-forget: notify backend worker to execute. Non-fatal if missing.
   const workerUrl = process.env.WORKER_EXECUTE_URL
   if (workerUrl && decision === "approve") {
     try {
@@ -48,7 +80,7 @@ export async function POST(req: Request) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Worker-Secret": process.env.WORKER_EXECUTE_SECRET || "",
+          "X-Worker-Secret": workerSecret,
         },
         body: JSON.stringify({ approval_id: approvalId }),
       })
