@@ -111,7 +111,6 @@ const specialtyGroups: { label: string; items: string[] }[] = [
 
 export function RegisterForm({ defaultPaket }: { defaultPaket?: string }) {
   const [fullName, setFullName] = useState("")
-  const [useTitle, setUseTitle] = useState(true)
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
   const [specialty, setSpecialty] = useState("")
@@ -146,7 +145,7 @@ export function RegisterForm({ defaultPaket }: { defaultPaket?: string }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          fullName: useTitle ? `dr. ${fullName}` : fullName,
+          fullName,
           email,
           phone,
           specialty: effectiveSpecialty,
@@ -177,27 +176,14 @@ export function RegisterForm({ defaultPaket }: { defaultPaket?: string }) {
         <label htmlFor="fullName" className="mb-1.5 block text-sm font-medium text-navy-dark">
           Nama Lengkap
         </label>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => setUseTitle(!useTitle)}
-            className={`shrink-0 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
-              useTitle
-                ? "border-teal-dark bg-teal-light text-teal-dark"
-                : "border-gray-300 text-gray-400 hover:border-gray-400"
-            }`}
-          >
-            dr.
-          </button>
-          <Input
-            id="fullName"
-            type="text"
-            placeholder="Nama lengkap Anda"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            required
-          />
-        </div>
+        <Input
+          id="fullName"
+          type="text"
+          placeholder="dr. Nama Lengkap, Sp.XX"
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
+          required
+        />
       </div>
 
       <div>
