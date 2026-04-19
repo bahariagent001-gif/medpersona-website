@@ -109,6 +109,7 @@ const navigation: NavItem[] = [
       { label: "Ringkasan", href: "/iklan" },
       { label: "Kreatif", href: "/iklan/kreatif" },
       { label: "Performa Harian", href: "/iklan/performa" },
+      { label: "Boost Post Existing", href: "/iklan/boost-post" },
     ],
   },
   {
