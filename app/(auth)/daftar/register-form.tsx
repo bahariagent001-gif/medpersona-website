@@ -5,20 +5,108 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useRouter } from "next/navigation"
 
-const specialties = [
-  "Dokter Umum",
-  "Dokter Gigi",
-  "Dermatologi",
-  "Kardiologi",
-  "Bedah",
-  "Anak",
-  "THT",
-  "Mata",
-  "Ortopedi",
-  "Paru",
-  "Saraf",
-  "Obstetri & Ginekologi",
-  "Lainnya",
+// Daftar spesialisasi mengacu pada nomenklatur KKI/PB IDI & PB PDGI.
+// Dikelompokkan agar navigasi dropdown tetap nyaman meski lengkap.
+// "Lainnya (isi manual)" memicu input teks bebas — handle di submit.
+const MANUAL_OPTION = "__manual__"
+
+const specialtyGroups: { label: string; items: string[] }[] = [
+  {
+    label: "Layanan Primer",
+    items: [
+      "Dokter Umum",
+      "Dokter Gigi Umum",
+      "Dokter Keluarga Layanan Primer (Sp.KKLP)",
+    ],
+  },
+  {
+    label: "Spesialis Dasar & Ibu-Anak",
+    items: [
+      "Penyakit Dalam (Sp.PD)",
+      "Ilmu Kesehatan Anak (Sp.A)",
+      "Obstetri & Ginekologi (Sp.OG)",
+      "Bedah Umum (Sp.B)",
+    ],
+  },
+  {
+    label: "Anestesi & Gawat Darurat",
+    items: [
+      "Anestesiologi & Terapi Intensif (Sp.An)",
+      "Emergensi Medik (Sp.EM)",
+    ],
+  },
+  {
+    label: "Bedah Sub-Spesialis",
+    items: [
+      "Bedah Anak (Sp.BA)",
+      "Bedah Digestif (Sp.B-KBD)",
+      "Bedah Onkologi (Sp.B-KOnk)",
+      "Bedah Ortopedi & Traumatologi (Sp.OT)",
+      "Bedah Plastik Rekonstruksi & Estetik (Sp.BP-RE)",
+      "Bedah Saraf (Sp.BS)",
+      "Bedah Thoraks Kardiovaskular (Sp.BTKV)",
+      "Bedah Vaskular (Sp.BVE)",
+      "Urologi (Sp.U)",
+    ],
+  },
+  {
+    label: "Jantung, Paru, Saraf & Indera",
+    items: [
+      "Kardiologi & Kedokteran Vaskular (Sp.JP)",
+      "Pulmonologi & Kedokteran Respirasi (Sp.P)",
+      "Neurologi (Sp.N)",
+      "Dermatologi & Venereologi / Kulit-Kelamin (Sp.DV / Sp.KK)",
+      "Oftalmologi / Mata (Sp.M)",
+      "THT-Bedah Kepala Leher (Sp.THT-KL)",
+    ],
+  },
+  {
+    label: "Jiwa & Perilaku",
+    items: [
+      "Kedokteran Jiwa / Psikiatri (Sp.KJ)",
+    ],
+  },
+  {
+    label: "Diagnostik, Laboratorium & Onkologi",
+    items: [
+      "Radiologi (Sp.Rad)",
+      "Patologi Anatomik (Sp.PA)",
+      "Patologi Klinik (Sp.PK)",
+      "Mikrobiologi Klinik (Sp.MK)",
+      "Parasitologi Klinik (Sp.Par.K)",
+      "Kedokteran Nuklir (Sp.KN)",
+      "Onkologi Radiasi (Sp.Onk.Rad)",
+      "Hematologi-Onkologi Medik",
+    ],
+  },
+  {
+    label: "Rehabilitasi & Kedokteran Khusus",
+    items: [
+      "Kedokteran Fisik & Rehabilitasi (Sp.KFR)",
+      "Gizi Klinik (Sp.GK)",
+      "Kedokteran Olahraga (Sp.KO)",
+      "Kedokteran Okupasi (Sp.Ok)",
+      "Kedokteran Penerbangan (Sp.KP)",
+      "Kedokteran Kelautan (Sp.KL)",
+      "Akupunktur Medik (Sp.Ak)",
+      "Andrologi (Sp.And)",
+      "Farmakologi Klinik (Sp.FK)",
+      "Forensik & Medikolegal (Sp.FM)",
+    ],
+  },
+  {
+    label: "Spesialis Kedokteran Gigi",
+    items: [
+      "Bedah Mulut & Maksilofasial (Sp.BM)",
+      "Ortodonti (Sp.Ort)",
+      "Periodonsia (Sp.Perio)",
+      "Konservasi Gigi / Endodonsia (Sp.KG)",
+      "Prostodonsia (Sp.Pros)",
+      "Ilmu Penyakit Mulut (Sp.PM)",
+      "Kedokteran Gigi Anak (Sp.KGA)",
+      "Radiologi Kedokteran Gigi (Sp.RKG)",
+    ],
+  },
 ]
 
 export function RegisterForm({ defaultPaket }: { defaultPaket?: string }) {
@@ -27,7 +115,11 @@ export function RegisterForm({ defaultPaket }: { defaultPaket?: string }) {
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
   const [specialty, setSpecialty] = useState("")
+  const [specialtyManual, setSpecialtyManual] = useState("")
   const [password, setPassword] = useState("")
+
+  const isManual = specialty === MANUAL_OPTION
+  const effectiveSpecialty = isManual ? specialtyManual.trim() : specialty
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()
@@ -43,6 +135,12 @@ export function RegisterForm({ defaultPaket }: { defaultPaket?: string }) {
       return
     }
 
+    if (!effectiveSpecialty) {
+      setError(isManual ? "Tulis spesialisasi Anda." : "Pilih spesialisasi Anda.")
+      setLoading(false)
+      return
+    }
+
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
@@ -51,7 +149,7 @@ export function RegisterForm({ defaultPaket }: { defaultPaket?: string }) {
           fullName: useTitle ? `dr. ${fullName}` : fullName,
           email,
           phone,
-          specialty,
+          specialty: effectiveSpecialty,
           password,
         }),
       })
@@ -142,12 +240,33 @@ export function RegisterForm({ defaultPaket }: { defaultPaket?: string }) {
           className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-navy-dark focus:border-teal-dark focus:outline-none focus:ring-1 focus:ring-teal-dark"
         >
           <option value="">Pilih spesialisasi...</option>
-          {specialties.map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
+          {specialtyGroups.map((group) => (
+            <optgroup key={group.label} label={group.label}>
+              {group.items.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </optgroup>
           ))}
+          <option value={MANUAL_OPTION}>Lainnya — tulis manual</option>
         </select>
+        {isManual && (
+          <div className="mt-2">
+            <Input
+              id="specialtyManual"
+              type="text"
+              placeholder="Tulis spesialisasi Anda (mis. Sp.GK Konsultan Nutrisi Anak)"
+              value={specialtyManual}
+              onChange={(e) => setSpecialtyManual(e.target.value)}
+              required
+              autoFocus
+            />
+            <p className="mt-1 text-xs text-gray-400">
+              Tidak menemukan spesialisasi Anda di daftar? Silakan tulis persis seperti yang tercantum di STR/SIP.
+            </p>
+          </div>
+        )}
       </div>
 
       <div>
