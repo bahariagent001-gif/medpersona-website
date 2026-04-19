@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { GrowthApprovalActions } from "./growth-approval-actions"
 import { ApprovalPreview } from "./approval-preview"
+import { MusicPicker } from "./music-picker"
 
 export const metadata = { title: "Growth Approvals — MedPersona" }
 export const revalidate = 15
@@ -63,6 +64,14 @@ export default async function GrowthApprovalsPage() {
                   {JSON.stringify(a.payload, null, 2)}
                 </pre>
               </details>
+              {a.type === "organic_post" && (
+                <div className="mb-3">
+                  <MusicPicker
+                    approvalId={a.id}
+                    currentAudio={(a.payload as { audio?: Record<string, unknown> })?.audio as never}
+                  />
+                </div>
+              )}
               <GrowthApprovalActions
                 approvalId={a.id}
                 approvalType={a.type}
