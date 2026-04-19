@@ -10,6 +10,7 @@ type Payload = {
     public_url?: string | null
     source?: string | null
     stock_query?: string | null
+    carousel_slide_urls?: string[] | null
   }
   creative?: {
     headline?: string
@@ -44,6 +45,7 @@ export function ApprovalPreview({ payload }: { payload: Payload | null | undefin
   if (!payload || typeof payload !== "object") return null
 
   const imageUrl = payload.visual?.public_url
+  const slides = payload.visual?.carousel_slide_urls
   const copy = payload.creative || {}
   const tg = payload.targeting || {}
 
@@ -53,7 +55,25 @@ export function ApprovalPreview({ payload }: { payload: Payload | null | undefin
 
   return (
     <div className="grid gap-4 md:grid-cols-[200px_1fr]">
-      {imageUrl ? (
+      {slides && slides.length > 1 ? (
+        <div className="space-y-1">
+          <div className="flex gap-1 overflow-x-auto rounded-md border border-gray-200 bg-gray-50 p-1">
+            {slides.map((u, i) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={i}
+                src={u}
+                alt={`slide ${i + 1}`}
+                className="h-24 flex-shrink-0 rounded object-cover"
+                loading="lazy"
+              />
+            ))}
+          </div>
+          <p className="px-1 text-[10px] uppercase text-gray-400">
+            carousel · {slides.length} slides
+          </p>
+        </div>
+      ) : imageUrl ? (
         <div className="overflow-hidden rounded-md border border-gray-200 bg-gray-50">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
