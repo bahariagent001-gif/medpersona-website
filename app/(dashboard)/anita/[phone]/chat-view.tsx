@@ -134,6 +134,34 @@ export function AnitaChatView({ phone }: { phone: string }) {
     }
   }
 
+  async function doSendTemplate() {
+    const template = prompt(
+      "Nama template (harus sudah approved di Meta Business Manager):\n\nContoh: anita_review_reminder, hello_world",
+      "hello_world"
+    )
+    if (!template) return
+    const paramsRaw = prompt(
+      `Parameter body (pisahkan dengan "|", kosongkan kalau tidak ada).\n\nContoh: Dokter Michelle | paket Growth`,
+      ""
+    )
+    const body_params = paramsRaw
+      ? paramsRaw.split("|").map((p) => p.trim()).filter(Boolean)
+      : []
+    try {
+      const res = await fetch(`/api/super-admin/anita/send-template/${encodeURIComponent(phone)}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ template, body_params }),
+      })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(json?.error || `HTTP ${res.status}`)
+      showToast(`Template "${template}" terkirim ✓`, true)
+      load()
+    } catch (e: unknown) {
+      showToast(`Gagal: ${(e as Error).message}`, false)
+    }
+  }
+
   async function doResume() {
     try {
       const res = await fetch(`/api/super-admin/anita/resume/${encodeURIComponent(phone)}`, {
@@ -185,11 +213,16 @@ export function AnitaChatView({ phone }: { phone: string }) {
       </div>
 
       {data.outside_24h_window && (
-        <Card className="border-orange-300 bg-orange-50 p-3 text-sm text-orange-900">
-          ⚠ <b>Meta 24-hour window tertutup.</b> Dokter terakhir membalas{" "}
-          {data.hours_since_last_inbound?.toFixed(1)} jam lalu. Pesan free-text
-          mungkin tidak terkirim — Meta hanya izinkan <b>template approved</b>{" "}
-          di luar window. Tombol Kirim akan minta konfirmasi force.
+        <Card className="space-y-2 border-orange-300 bg-orange-50 p-3 text-sm text-orange-900">
+          <div>
+            ⚠ <b>Meta 24-hour window tertutup.</b> Dokter terakhir membalas{" "}
+            {data.hours_since_last_inbound?.toFixed(1)} jam lalu. Pesan free-text
+            mungkin tidak terkirim. Pakai <b>template approved</b> untuk
+            re-engage (tombol di bawah).
+          </div>
+          <Button size="sm" variant="outline" onClick={doSendTemplate}>
+            📨 Kirim Template
+          </Button>
         </Card>
       )}
 

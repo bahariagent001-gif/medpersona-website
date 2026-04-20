@@ -7,6 +7,25 @@ import { Badge } from "@/components/ui/badge"
 export const metadata = { title: "Publish Calendar — MedPersona" }
 export const revalidate = 30
 
+// Local type for scheduled_posts row — the generic Supabase client doesn't
+// know this table because schemas haven't been regenerated via `supabase gen
+// types`. Defining it here keeps the build strict without disabling TS.
+type ScheduledPost = {
+  id: string
+  platform: string
+  target_account: string | null
+  caption: string | null
+  visual_url: string | null
+  carousel_slide_urls: string[] | null
+  scheduled_for: string | null
+  published_at: string | null
+  status: string
+  error_message: string | null
+  platform_permalink: string | null
+  platform_post_id: string | null
+  created_at: string
+}
+
 const STATUS_COLORS: Record<string, "secondary" | "info" | "warning" | "success" | "danger"> = {
   scheduled: "info",
   publishing: "warning",
@@ -47,6 +66,7 @@ export default async function PublishCalendarPage({
     )
     .order("scheduled_for", { ascending: false })
     .limit(200)
+    .returns<ScheduledPost[]>()
 
   const all = posts || []
   const filtered = filter === "all"
