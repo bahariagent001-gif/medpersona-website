@@ -29,6 +29,7 @@ import {
   Sparkles,
   Search,
   Hash,
+  MessageCircle,
 } from "lucide-react"
 import { useState } from "react"
 
@@ -143,6 +144,12 @@ const navigation: NavItem[] = [
       { label: "Prospek", href: "/leads" },
       { label: "Outreach", href: "/leads/outreach" },
     ],
+  },
+  {
+    label: "Anita",
+    href: "/anita",
+    icon: <MessageCircle className="h-5 w-5" />,
+    adminOnly: true,
   },
   {
     label: "Pengaturan",

@@ -1,0 +1,221 @@
+"use client"
+
+import Link from "next/link"
+import { useEffect, useRef, useState } from "react"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+
+type HistoryItem = {
+  role: string
+  text: string
+  ts: string
+  meta?: { origin?: string } | null
+}
+
+type ChatData = {
+  phone: string
+  state: string
+  ext_flow: string | null
+  selected_package: string | null
+  anita_paused: boolean
+  pause_reason: string | null
+  doctor_id: string | null
+  profile_data: Record<string, unknown>
+  history: HistoryItem[]
+  updated_at: string
+}
+
+const REFRESH_MS = 4000
+
+export function AnitaChatView({ phone }: { phone: string }) {
+  const [data, setData] = useState<ChatData | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [sending, setSending] = useState(false)
+  const [text, setText] = useState("")
+  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  async function load() {
+    try {
+      const res = await fetch(`/api/super-admin/anita/chat/${encodeURIComponent(phone)}`, {
+        cache: "no-store",
+      })
+      const json = await res.json()
+      if (!res.ok) {
+        setError(json?.error || `HTTP ${res.status}`)
+        return
+      }
+      setData(json)
+      setError(null)
+    } catch (e: unknown) {
+      setError((e as Error).message || "network error")
+    }
+  }
+
+  useEffect(() => {
+    load()
+    const t = setInterval(load, REFRESH_MS)
+    return () => clearInterval(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phone])
+
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+  }, [data?.history?.length])
+
+  function showToast(msg: string, ok: boolean) {
+    setToast({ msg, ok })
+    setTimeout(() => setToast(null), 2500)
+  }
+
+  async function doSend() {
+    if (!text.trim()) return
+    setSending(true)
+    try {
+      const res = await fetch(`/api/super-admin/anita/send/${encodeURIComponent(phone)}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: text.trim() }),
+      })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(json?.error || `HTTP ${res.status}`)
+      setText("")
+      showToast("Terkirim ✓", true)
+      load()
+    } catch (e: unknown) {
+      showToast(`Gagal: ${(e as Error).message}`, false)
+    } finally {
+      setSending(false)
+    }
+  }
+
+  async function doPause() {
+    const reason = prompt("Alasan pause? (opsional)", "manual takeover") || "manual takeover"
+    try {
+      const res = await fetch(`/api/super-admin/anita/pause/${encodeURIComponent(phone)}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason }),
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      showToast("Anita paused ⏸", true)
+      load()
+    } catch (e: unknown) {
+      showToast(`Gagal: ${(e as Error).message}`, false)
+    }
+  }
+
+  async function doResume() {
+    try {
+      const res = await fetch(`/api/super-admin/anita/resume/${encodeURIComponent(phone)}`, {
+        method: "POST",
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      showToast("Anita resumed ▶", true)
+      load()
+    } catch (e: unknown) {
+      showToast(`Gagal: ${(e as Error).message}`, false)
+    }
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-4">
+        <Link href="/anita" className="text-sm text-sky-700 hover:underline">
+          ← Semua conversations
+        </Link>
+        <Card className="p-6 text-sm text-red-600">Gagal memuat: {error}</Card>
+      </div>
+    )
+  }
+  if (!data) return <Card className="p-6 text-sm">Memuat...</Card>
+
+  return (
+    <div className="space-y-4">
+      <Link href="/anita" className="text-sm text-sky-700 hover:underline">
+        ← Semua conversations
+      </Link>
+
+      <div>
+        <h1 className="text-xl font-semibold">{phone}</h1>
+        <div className="mt-2 flex flex-wrap gap-2 text-xs">
+          <Badge variant="secondary">State: {data.state}</Badge>
+          {data.selected_package && <Badge variant="outline">Paket: {data.selected_package}</Badge>}
+          {data.doctor_id && <Badge variant="outline">doctor_id: {data.doctor_id}</Badge>}
+          {data.anita_paused ? (
+            <Badge className="bg-orange-100 text-orange-800">
+              ⏸ PAUSED {data.pause_reason && `— ${data.pause_reason}`}
+            </Badge>
+          ) : (
+            <Badge className="bg-green-100 text-green-800">● ACTIVE</Badge>
+          )}
+        </div>
+      </div>
+
+      <Card className="bg-[#f5f5f7] p-4">
+        <div ref={scrollRef} className="max-h-[55vh] overflow-y-auto space-y-2 pr-2">
+          {data.history.map((m, i) => {
+            const isAnita = m.role === "anita"
+            const isTakeover = m.meta?.origin === "admin_takeover"
+            const bg = isTakeover
+              ? "bg-sky-100 border-sky-300"
+              : isAnita
+              ? "bg-[#dcf8c6] border-[#c5e7a4]"
+              : "bg-white border-gray-200"
+            return (
+              <div key={i} className={`flex ${isAnita ? "justify-end" : "justify-start"}`}>
+                <div className={`max-w-[75%] rounded-2xl border px-3 py-2 text-sm ${bg}`}>
+                  {isTakeover && (
+                    <span className="mr-1 inline-block rounded bg-sky-700 px-1.5 py-0.5 text-[10px] text-white">
+                      ADMIN
+                    </span>
+                  )}
+                  <span className="whitespace-pre-wrap break-words">{m.text}</span>
+                  <div className="mt-1 text-[10px] text-gray-500">
+                    {m.ts?.slice(0, 19).replace("T", " ")}
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </Card>
+
+      <Card className="p-4 space-y-3">
+        <div className="text-sm font-medium">⚡ Takeover panel</div>
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Ketik pesan untuk dikirim AS Anita..."
+          rows={3}
+          className="w-full rounded-md border p-2 text-sm focus:outline-none focus:ring-1"
+        />
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={doSend} disabled={sending || !text.trim()}>
+            {sending ? "Mengirim..." : "Kirim sebagai Anita"}
+          </Button>
+          {data.anita_paused ? (
+            <Button variant="outline" onClick={doResume} className="text-green-700 border-green-600">
+              ▶ Resume Anita
+            </Button>
+          ) : (
+            <Button variant="outline" onClick={doPause} className="text-orange-700 border-orange-600">
+              ⏸ Pause Anita
+            </Button>
+          )}
+        </div>
+      </Card>
+
+      {toast && (
+        <div
+          className={`fixed bottom-6 right-6 rounded-md px-4 py-2 text-sm text-white shadow-lg ${
+            toast.ok ? "bg-green-700" : "bg-red-700"
+          }`}
+        >
+          {toast.msg}
+        </div>
+      )}
+    </div>
+  )
+}
