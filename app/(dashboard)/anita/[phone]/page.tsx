@@ -3,7 +3,6 @@ import { getAuthProfile } from "@/lib/supabase/auth"
 import { AnitaChatView } from "./chat-view"
 
 export const metadata = { title: "Anita Chat — MedPersona" }
-export const dynamic = "force-dynamic"
 
 export default async function AnitaChatPage({
   params,

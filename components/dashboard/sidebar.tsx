@@ -31,7 +31,7 @@ import {
   Hash,
   MessageCircle,
 } from "lucide-react"
-import { useState } from "react"
+import { memo, useMemo, useState } from "react"
 
 interface NavItem {
   label: string
@@ -158,13 +158,17 @@ const navigation: NavItem[] = [
   },
 ]
 
-export function Sidebar({ userRole }: { userRole: string }) {
+function SidebarInner({ userRole }: { userRole: string }) {
   const pathname = usePathname()
   const [collapsed, setCollapsed] = useState(false)
   const [expandedSection, setExpandedSection] = useState<string | null>(null)
 
-  const filteredNav = navigation.filter(
-    (item) => !item.adminOnly || ["super_admin", "admin", "staff"].includes(userRole)
+  // Memoize filter — nav doesn't change per render, userRole is stable.
+  const filteredNav = useMemo(
+    () => navigation.filter(
+      (item) => !item.adminOnly || ["super_admin", "admin", "staff"].includes(userRole)
+    ),
+    [userRole]
   )
 
   return (
@@ -277,3 +281,7 @@ export function Sidebar({ userRole }: { userRole: string }) {
     </aside>
   )
 }
+
+// Memo so sidebar doesn't re-render on every dashboard route change.
+// usePathname inside still re-reads the route for active-state styling.
+export const Sidebar = memo(SidebarInner)

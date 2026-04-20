@@ -11,6 +11,20 @@ type HistoryItem = {
   text: string
   ts: string
   meta?: { origin?: string } | null
+  media_id?: string | null
+  media_type?: string | null
+}
+
+const FMT_JKT = new Intl.DateTimeFormat("id-ID", {
+  timeZone: "Asia/Jakarta",
+  year: "numeric", month: "2-digit", day: "2-digit",
+  hour: "2-digit", minute: "2-digit", second: "2-digit",
+  hour12: false,
+})
+function fmtJakarta(iso: string): string {
+  if (!iso) return ""
+  try { return FMT_JKT.format(new Date(iso)) + " WIB" }
+  catch { return iso.slice(0, 19).replace("T", " ") }
 }
 
 type ChatData = {
@@ -138,7 +152,10 @@ export function AnitaChatView({ phone }: { phone: string }) {
       </Link>
 
       <div>
-        <h1 className="text-xl font-semibold">{phone}</h1>
+        <h1 className="text-xl font-semibold">
+          {(data.profile_data?.full_name as string) || "(belum daftar)"}
+        </h1>
+        <div className="text-xs text-muted-foreground">{phone}</div>
         <div className="mt-2 flex flex-wrap gap-2 text-xs">
           <Badge variant="secondary">State: {data.state}</Badge>
           {data.selected_package && <Badge variant="outline">Paket: {data.selected_package}</Badge>}
@@ -171,9 +188,27 @@ export function AnitaChatView({ phone }: { phone: string }) {
                       ADMIN
                     </span>
                   )}
+                  {m.media_id && m.media_type === "image" && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={`/api/super-admin/anita/media/${encodeURIComponent(m.media_id)}`}
+                      alt="foto dari dokter"
+                      className="mb-1 max-h-80 max-w-full rounded"
+                    />
+                  )}
+                  {m.media_id && ["document", "audio", "video"].includes(m.media_type || "") && (
+                    <a
+                      href={`/api/super-admin/anita/media/${encodeURIComponent(m.media_id)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mb-1 inline-block rounded bg-white/60 px-2 py-1 text-xs text-sky-700 underline"
+                    >
+                      📎 Buka {m.media_type} ({m.media_id.slice(0, 8)}...)
+                    </a>
+                  )}
                   <span className="whitespace-pre-wrap break-words">{m.text}</span>
                   <div className="mt-1 text-[10px] text-gray-500">
-                    {m.ts?.slice(0, 19).replace("T", " ")}
+                    {fmtJakarta(m.ts)}
                   </div>
                 </div>
               </div>

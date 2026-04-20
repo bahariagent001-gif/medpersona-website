@@ -7,6 +7,8 @@ import { Card } from "@/components/ui/card"
 
 type Conversation = {
   phone: string
+  doctor_name: string | null
+  specialty: string | null
   state: string
   ext_flow: string | null
   ext_state: string | null
@@ -21,6 +23,22 @@ type Conversation = {
 }
 
 const REFRESH_MS = 5000
+
+const FMT_JKT = new Intl.DateTimeFormat("id-ID", {
+  timeZone: "Asia/Jakarta",
+  year: "numeric", month: "2-digit", day: "2-digit",
+  hour: "2-digit", minute: "2-digit", second: "2-digit",
+  hour12: false,
+})
+
+function fmtJakarta(iso: string): string {
+  if (!iso) return ""
+  try {
+    return FMT_JKT.format(new Date(iso))
+  } catch {
+    return iso.slice(0, 19).replace("T", " ")
+  }
+}
 
 export function AnitaConversationsList() {
   const [items, setItems] = useState<Conversation[] | null>(null)
@@ -81,11 +99,11 @@ export function AnitaConversationsList() {
           <table className="w-full text-sm">
             <thead className="bg-muted/50">
               <tr className="text-left">
-                <th className="px-3 py-2 font-medium">Phone</th>
+                <th className="px-3 py-2 font-medium">Dokter</th>
                 <th className="px-3 py-2 font-medium">State</th>
                 <th className="px-3 py-2 font-medium">Paket</th>
                 <th className="px-3 py-2 font-medium">Last message</th>
-                <th className="px-3 py-2 font-medium">Updated</th>
+                <th className="px-3 py-2 font-medium">Updated (WIB)</th>
                 <th className="px-3 py-2 font-medium">#</th>
               </tr>
             </thead>
@@ -106,8 +124,12 @@ export function AnitaConversationsList() {
                         href={`/anita/${encodeURIComponent(c.phone)}`}
                         className="font-medium text-sky-700 hover:underline"
                       >
-                        {c.phone}
+                        {c.doctor_name || "(belum daftar)"}
                       </Link>
+                      <div className="text-[11px] text-muted-foreground">
+                        {c.phone}
+                        {c.specialty && ` · ${c.specialty}`}
+                      </div>
                     </td>
                     <td className="px-3 py-2">
                       <Badge variant="secondary">{c.state}</Badge>
@@ -123,7 +145,7 @@ export function AnitaConversationsList() {
                       {c.last_text}
                     </td>
                     <td className="px-3 py-2 text-xs text-muted-foreground whitespace-nowrap">
-                      {c.updated_at?.slice(0, 19).replace("T", " ")}
+                      {fmtJakarta(c.updated_at)}
                     </td>
                     <td className="px-3 py-2 text-xs">{c.msg_count}</td>
                   </tr>

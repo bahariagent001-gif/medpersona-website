@@ -3,8 +3,8 @@ import { getAuthProfile } from "@/lib/supabase/auth"
 import { AnitaConversationsList } from "./conversations-list"
 
 export const metadata = { title: "Anita — MedPersona" }
-// Fresh data on every request; client component refreshes periodically on top.
-export const dynamic = "force-dynamic"
+// SSR shell is static — client component polls fresh data every 5s.
+// Auth gate runs in the server render; role cached per-request via React cache.
 
 export default async function AnitaAdminPage() {
   const { user, profile } = await getAuthProfile()
