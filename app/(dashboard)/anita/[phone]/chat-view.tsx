@@ -38,6 +38,8 @@ type ChatData = {
   profile_data: Record<string, unknown>
   history: HistoryItem[]
   updated_at: string
+  hours_since_last_inbound: number | null
+  outside_24h_window: boolean
 }
 
 const REFRESH_MS = 4000
@@ -83,19 +85,31 @@ export function AnitaChatView({ phone }: { phone: string }) {
     setTimeout(() => setToast(null), 2500)
   }
 
-  async function doSend() {
+  async function doSend(force = false) {
     if (!text.trim()) return
     setSending(true)
     try {
       const res = await fetch(`/api/super-admin/anita/send/${encodeURIComponent(phone)}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: text.trim() }),
+        body: JSON.stringify({ text: text.trim(), force }),
       })
       const json = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(json?.error || `HTTP ${res.status}`)
+      if (!res.ok) {
+        if (json?.error === "outside_24h_window") {
+          const ok = confirm(
+            `${json.message}\n\nPaksa kirim? (Pesan mungkin tidak sampai).`
+          )
+          if (ok) {
+            setSending(false)
+            return doSend(true)
+          }
+          throw new Error("Dibatalkan — di luar 24h window")
+        }
+        throw new Error(json?.error || `HTTP ${res.status}`)
+      }
       setText("")
-      showToast("Terkirim ✓", true)
+      showToast(force ? "Terkirim (force) — mungkin tidak sampai" : "Terkirim ✓", true)
       load()
     } catch (e: unknown) {
       showToast(`Gagal: ${(e as Error).message}`, false)
@@ -170,6 +184,15 @@ export function AnitaChatView({ phone }: { phone: string }) {
         </div>
       </div>
 
+      {data.outside_24h_window && (
+        <Card className="border-orange-300 bg-orange-50 p-3 text-sm text-orange-900">
+          ⚠ <b>Meta 24-hour window tertutup.</b> Dokter terakhir membalas{" "}
+          {data.hours_since_last_inbound?.toFixed(1)} jam lalu. Pesan free-text
+          mungkin tidak terkirim — Meta hanya izinkan <b>template approved</b>{" "}
+          di luar window. Tombol Kirim akan minta konfirmasi force.
+        </Card>
+      )}
+
       <Card className="bg-[#f5f5f7] p-4">
         <div ref={scrollRef} className="max-h-[55vh] overflow-y-auto space-y-2 pr-2">
           {data.history.map((m, i) => {
@@ -227,7 +250,7 @@ export function AnitaChatView({ phone }: { phone: string }) {
           className="w-full rounded-md border p-2 text-sm focus:outline-none focus:ring-1"
         />
         <div className="flex flex-wrap gap-2">
-          <Button onClick={doSend} disabled={sending || !text.trim()}>
+          <Button onClick={() => doSend(false)} disabled={sending || !text.trim()}>
             {sending ? "Mengirim..." : "Kirim sebagai Anita"}
           </Button>
           {data.anita_paused ? (
