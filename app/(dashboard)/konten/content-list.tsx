@@ -53,13 +53,22 @@ export function ContentList({ content }: { content: ContentItem[] }) {
           <h1 className="text-2xl font-bold text-navy-dark">Konten</h1>
           <p className="text-sm text-gray-500">Semua konten di seluruh dokter</p>
         </div>
-        <Link
-          href="/konten/kalender"
-          className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-navy-dark hover:bg-gray-50"
-        >
-          <Calendar className="h-4 w-4" />
-          Kalender
-        </Link>
+        <div className="flex gap-2">
+          <Link
+            href="/konten/kalender"
+            className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-navy-dark hover:bg-gray-50"
+          >
+            <Calendar className="h-4 w-4" />
+            Kalender
+          </Link>
+          <Link
+            href="/konten/publish-kalender"
+            className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-navy-dark hover:bg-gray-50"
+          >
+            <Calendar className="h-4 w-4" />
+            Publish Calendar
+          </Link>
+        </div>
       </div>
 
       {/* Status filters — client-side, instant switching */}
