@@ -101,9 +101,7 @@ export async function POST(request: NextRequest) {
         // Bank transfer
         "BCA", "BNI", "BSI", "MANDIRI", "BRI", "PERMATA",
         // E-wallet
-        "OVO", "DANA", "SHOPEEPAY", "QRIS", "LINKAJA",
-        // Credit card (Xendit auto-enables 3DS + supports Visa/Master/JCB)
-        "CREDIT_CARD",
+        "OVO", "DANA", "SHOPEEPAY", "QRIS",
       ],
       success_redirect_url: `${origin}/dashboard?pembayaran=berhasil`,
       failure_redirect_url: failureRedirect,
