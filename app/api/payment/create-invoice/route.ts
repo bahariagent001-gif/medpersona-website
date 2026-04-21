@@ -38,7 +38,6 @@ export async function POST(request: NextRequest) {
     const pricing = TIER_PRICING[tier]
     const now = new Date()
     const period = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
-    const externalId = `${profile.doctor_id}_${period}_${tier}`
 
     const origin = request.headers.get("origin") || process.env.NEXT_PUBLIC_SITE_URL || "https://medpersona.id"
 
@@ -48,6 +47,50 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Layanan pembayaran sedang tidak tersedia. Silakan coba lagi nanti atau hubungi support@medpersona.id" }, { status: 503 })
     }
 
+    // Idempotency: if doctor already has a pending invoice for the same tier
+    // in the current period, return its existing invoice_url instead of
+    // creating a duplicate (Xendit rejects duplicate external_id with 400).
+    const admin = createAdminClient()
+    const { data: existingPending } = await admin
+      .from("invoices")
+      .select("id, invoice_url, created_at, tier, period, status")
+      .eq("doctor_id", profile.doctor_id)
+      .eq("status", "pending")
+      .eq("tier", tier)
+      .eq("period", period)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (existingPending?.invoice_url) {
+      // Reuse the still-open invoice — saves the user from a duplicate-ID
+      // error and lets them just re-open the checkout link.
+      return NextResponse.json({
+        success: true,
+        invoiceUrl: existingPending.invoice_url,
+        invoiceId: existingPending.id,
+        reused: true,
+      })
+    }
+
+    // externalId now includes a short timestamp suffix so repeated clicks
+    // or switching-tiers-mid-period always produce a unique id.
+    const tsSuffix = now.getTime().toString(36).slice(-6)
+    const externalId = `${profile.doctor_id}_${period}_${tier}_${tsSuffix}`
+
+    // Detect if this is an upgrade (doctor already has active tier) so we can
+    // redirect back to /langganan on failure instead of /daftar/paket which
+    // is semantically a sign-up flow.
+    const { data: currentDoctor } = await admin
+      .from("doctors")
+      .select("tier, subscription_status")
+      .eq("id", profile.doctor_id)
+      .maybeSingle()
+    const isUpgrade = currentDoctor?.subscription_status === "active"
+    const failureRedirect = isUpgrade
+      ? `${origin}/langganan?error=payment_failed`
+      : `${origin}/daftar/paket?error=payment_failed`
+
     const xenditPayload = {
       external_id: externalId,
       amount: pricing.amount,
@@ -55,11 +98,15 @@ export async function POST(request: NextRequest) {
       description: `Langganan MedPersona ${pricing.label} — ${period}`,
       invoice_duration: 259200, // 3 days
       payment_methods: [
+        // Bank transfer
         "BCA", "BNI", "BSI", "MANDIRI", "BRI", "PERMATA",
-        "OVO", "DANA", "SHOPEEPAY", "QRIS",
+        // E-wallet
+        "OVO", "DANA", "SHOPEEPAY", "QRIS", "LINKAJA",
+        // Credit card (Xendit auto-enables 3DS + supports Visa/Master/JCB)
+        "CREDIT_CARD",
       ],
       success_redirect_url: `${origin}/dashboard?pembayaran=berhasil`,
-      failure_redirect_url: `${origin}/daftar/paket?error=payment_failed`,
+      failure_redirect_url: failureRedirect,
       customer: {
         given_names: profile.full_name || user.email,
         email: profile.email || user.email,
@@ -99,9 +146,8 @@ export async function POST(request: NextRequest) {
     const xenditData = await xenditRes.json()
     const invoiceUrl = xenditData.invoice_url
 
-    // Save invoice to database (use admin client to bypass RLS)
-    const admin = createAdminClient()
-
+    // Save invoice to database (admin client already instantiated above for
+    // idempotency lookup — reuse it to bypass RLS on insert).
     await admin.from("invoices").insert({
       id: externalId,
       doctor_id: profile.doctor_id,
@@ -113,11 +159,10 @@ export async function POST(request: NextRequest) {
       period,
     })
 
-    // Update doctor's tier
-    await admin
-      .from("doctors")
-      .update({ tier })
-      .eq("id", profile.doctor_id)
+    // Tier is intentionally NOT updated here — the xendit webhook promotes the
+    // tier AFTER the payment is confirmed paid. If we updated tier before
+    // payment, a doctor who abandons Xendit checkout would be left on the new
+    // tier without having paid for it.
 
     return NextResponse.json({
       success: true,

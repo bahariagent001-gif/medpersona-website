@@ -18,6 +18,7 @@ import {
   ChevronRight,
   LogOut,
   BarChart3,
+  Activity,
   Receipt,
   TrendingUp,
   Wallet,
@@ -33,12 +34,19 @@ import {
 } from "lucide-react"
 import { memo, useMemo, useState } from "react"
 
+interface NavChild {
+  label: string
+  href: string
+  adminOnly?: boolean
+}
+
 interface NavItem {
   label: string
   href: string
   icon: React.ReactNode
   adminOnly?: boolean
-  children?: { label: string; href: string }[]
+  doctorOnly?: boolean
+  children?: NavChild[]
 }
 
 const navigation: NavItem[] = [
@@ -87,8 +95,20 @@ const navigation: NavItem[] = [
     icon: <CheckSquare className="h-5 w-5" />,
     children: [
       { label: "Konten Dokter", href: "/persetujuan" },
-      { label: "Growth (Iklan/SEO/Outreach)", href: "/persetujuan/growth" },
+      // Growth approval flow is for MedPersona's own marketing team (managing
+      // ads/SEO for the agency). Regular doctors should not see or access it.
+      { label: "Growth (Iklan/SEO/Outreach)", href: "/persetujuan/growth", adminOnly: true },
     ],
+  },
+  {
+    label: "Performa",
+    href: "/performa",
+    icon: <Activity className="h-5 w-5" />,
+  },
+  {
+    label: "Riset Mingguan",
+    href: "/riset",
+    icon: <BookOpen className="h-5 w-5" />,
   },
   {
     label: "Langganan",
@@ -164,12 +184,14 @@ function SidebarInner({ userRole }: { userRole: string }) {
   const [expandedSection, setExpandedSection] = useState<string | null>(null)
 
   // Memoize filter — nav doesn't change per render, userRole is stable.
-  const filteredNav = useMemo(
-    () => navigation.filter(
-      (item) => !item.adminOnly || ["super_admin", "admin", "staff"].includes(userRole)
-    ),
-    [userRole]
-  )
+  const filteredNav = useMemo(() => {
+    const isAdmin = ["super_admin", "admin", "staff"].includes(userRole)
+    return navigation.filter((item) => {
+      if (item.adminOnly && !isAdmin) return false
+      if (item.doctorOnly && isAdmin) return false
+      return true
+    })
+  }, [userRole])
 
   return (
     <aside
@@ -228,7 +250,12 @@ function SidebarInner({ userRole }: { userRole: string }) {
                     </button>
                     {!collapsed && isExpanded && (
                       <ul className="ml-8 mt-1 space-y-1">
-                        {item.children.map((child) => (
+                        {item.children
+                          .filter((child) =>
+                            !child.adminOnly ||
+                            ["super_admin", "admin", "staff"].includes(userRole)
+                          )
+                          .map((child) => (
                           <li key={child.href}>
                             <Link
                               href={child.href}

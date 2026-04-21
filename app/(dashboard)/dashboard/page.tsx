@@ -18,6 +18,7 @@ import {
 } from "lucide-react"
 import { DoctorSetupForm } from "./doctor-setup-form"
 import { EmptyState } from "@/components/ui/empty-state"
+import { RenewalBanner } from "@/components/dashboard/renewal-banner"
 
 export const metadata = {
   title: "Dashboard — MedPersona",
@@ -290,17 +291,20 @@ async function DoctorDashboard({ doctorId, pembayaran, aksesDitolak }: { doctorI
     { count: approvedCount },
     { count: postedCount },
     { data: pendingInvoices },
+    { data: recurringPlan },
   ] = await Promise.all([
     supabase.from("doctors").select("id, full_name, tier, subscription_status, subscription_expires, monthly_cost_idr").eq("id", doctorId).single(),
     supabase.from("content_items").select("id, topic_title, platform, status, planned_date").eq("doctor_id", doctorId).eq("status", "pending_review").order("planned_date"),
     supabase.from("content_items").select("*", { count: "exact", head: true }).eq("doctor_id", doctorId).eq("status", "approved"),
     supabase.from("content_items").select("*", { count: "exact", head: true }).eq("doctor_id", doctorId).eq("status", "posted"),
     supabase.from("invoices").select("id, invoice_url, status").eq("doctor_id", doctorId).eq("status", "pending").limit(1),
+    supabase.from("recurring_plans").select("status").eq("doctor_id", doctorId).eq("status", "active").maybeSingle(),
   ])
 
   const isSubActive = doctor?.subscription_status === "active"
   const needsPayment = !isSubActive
   const pendingInvoice = pendingInvoices?.[0]
+  const hasActiveAutoRenew = recurringPlan?.status === "active"
 
   return (
     <div className="space-y-6">
@@ -321,6 +325,11 @@ async function DoctorDashboard({ doctorId, pembayaran, aksesDitolak }: { doctorI
           Tagihan berhasil dibuat. Silakan selesaikan pembayaran untuk mengaktifkan langganan Anda.
         </div>
       )}
+
+      <RenewalBanner
+        subscriptionExpires={doctor?.subscription_expires ?? null}
+        hasAutoRenew={hasActiveAutoRenew}
+      />
 
       <div>
         <h1 className="text-2xl font-bold text-navy-dark">

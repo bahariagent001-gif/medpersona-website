@@ -33,11 +33,24 @@ export function DoctorSetupForm({ userName }: { userName?: string }) {
       const data = await res.json()
 
       if (!res.ok) {
+        // 409 = profile is already linked to a doctor. This happens when the
+        // form is stale (doctor_id was created in another tab, by Anita, or via
+        // a previous submission that client didn't see). Don't leave the user
+        // stuck — push them forward into the dashboard which will re-fetch and
+        // show the proper view.
+        if (res.status === 409) {
+          router.replace("/dashboard")
+          router.refresh()
+          return
+        }
         setError(data.error || "Terjadi kesalahan.")
         setLoading(false)
         return
       }
 
+      // Success — replace (not just refresh) so the URL reflects a clean state
+      // and Next re-renders with the new profile.doctor_id flowing through.
+      router.replace("/dashboard")
       router.refresh()
     } catch {
       setError("Gagal menghubungi server. Coba lagi.")

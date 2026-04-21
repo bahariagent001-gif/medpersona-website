@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { EmptyState } from "@/components/ui/empty-state"
+import { RenewalBanner } from "@/components/dashboard/renewal-banner"
+import { AutoRenewalSection } from "./auto-renewal-section"
 
 export const metadata = {
   title: "Langganan — MedPersona",
@@ -41,18 +43,48 @@ export default async function SubscriptionPage() {
   const supabase = await createClient()
 
   if (!profile?.doctor_id) {
-    redirect("/dashboard")
+    // Don't bounce to /dashboard — show a helpful setup state instead so the
+    // doctor understands why the subscription page is empty and how to proceed.
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-navy-dark">Langganan</h1>
+          <p className="text-sm text-gray-500">Kelola paket dan status langganan Anda</p>
+        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Lengkapi Profil Dokter Dulu</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-gray-600">
+              Untuk bisa mengaktifkan langganan, mohon lengkapi profil dokter terlebih dahulu di halaman Dashboard.
+              Setelah profil terisi, halaman ini akan menampilkan paket aktif dan riwayat pembayaran Anda.
+            </p>
+            <Link
+              href="/dashboard"
+              className="mt-4 inline-block rounded-lg bg-teal-dark px-6 py-2.5 text-sm font-semibold text-white hover:bg-teal"
+            >
+              Ke Dashboard untuk Setup Profil
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   const [
     { data: doctor },
     { data: invoices },
     { data: usage },
+    { data: recurringPlan },
   ] = await Promise.all([
     supabase.from("doctors").select("id, full_name, tier, subscription_status, subscription_expires, monthly_cost_idr").eq("id", profile.doctor_id).single(),
     supabase.from("invoices").select("id, period, tier, amount_idr, status, invoice_url, paid_at, created_at").eq("doctor_id", profile.doctor_id).order("created_at", { ascending: false }).limit(10),
     supabase.from("monthly_usage").select("doctor_id, month, posts_published, videos_published, revisions_used").eq("doctor_id", profile.doctor_id).order("month", { ascending: false }).limit(1),
+    supabase.from("recurring_plans").select("id, status, method_type, method_mask, next_charge_at, amount_idr, tier, failure_reason").eq("doctor_id", profile.doctor_id).in("status", ["active", "pending_auth"]).maybeSingle(),
   ])
+
+  const hasActiveAutoRenew = recurringPlan?.status === "active"
 
   const tier = doctor?.tier || "starter"
   const tierInfo = TIER_DETAILS[tier] || TIER_DETAILS.starter
@@ -76,6 +108,11 @@ export default async function SubscriptionPage() {
         <h1 className="text-2xl font-bold text-navy-dark">Langganan</h1>
         <p className="text-sm text-gray-500">Kelola paket dan status langganan Anda</p>
       </div>
+
+      <RenewalBanner
+        subscriptionExpires={doctor?.subscription_expires ?? null}
+        hasAutoRenew={hasActiveAutoRenew}
+      />
 
       {/* Subscription Status */}
       <Card>
@@ -163,6 +200,8 @@ export default async function SubscriptionPage() {
           )}
         </CardContent>
       </Card>
+
+      <AutoRenewalSection currentTier={tier} existingPlan={recurringPlan ?? null} />
 
       {/* Payment History */}
       <Card>
